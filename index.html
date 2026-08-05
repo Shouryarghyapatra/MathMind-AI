@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MathMind AI</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+
+        <!-- =====================================
+             WEBSITE TITLE
+        ====================================== -->
+
+        <h1>🧠 MathMind AI</h1>
+
+        <p class="subtitle">
+            Learn • Practise • Improve
+        </p>
+
+
+        <!-- =====================================
+             HOME SCREEN
+        ====================================== -->
+
+        <div id="welcome-screen">
+
+            <h2>Ready for a Maths Challenge?</h2>
+
+            <p>
+                Select a topic, choose a difficulty,
+                and test your maths skills!
+            </p>
+
+
+            <!-- STUDENT NAME -->
+
+            <input
+                type="text"
+                id="student-name"
+                placeholder="Enter your name"
+                autocomplete="name"
+            >
+
+
+            <!-- TOPIC -->
+
+            <select id="topic">
+
+                <option value="">
+                    Select a topic
+                </option>
+
+
+                <option value="addition">
+                    ➕ Addition
+                </option>
+
+
+                <option value="subtraction">
+                    ➖ Subtraction
+                </option>
+
+
+                <option value="multiplication">
+                    ✖️ Multiplication
+                </option>
+
+
+                <option value="division">
+                    ➗ Division
+                </option>
+
+
+                <option value="fractions">
+                    🍕 Fractions
+                </option>
+
+
+                <option value="decimals">
+                    🔢 Decimals
+                </option>
+
+
+                <option value="percentages">
+                    📊 Percentages
+                </option>
+
+
+                <option value="ratio">
+                    ⚖️ Ratio and Proportion
+                </option>
+
+
+                <option value="factors">
+                    🔍 Factors and Multiples
+                </option>
+
+
+                <option value="mixed">
+                    🎯 Mixed Challenge
+                </option>
+
+
+                <!-- NEW CHALLENGE MODE -->
+
+                <option value="challenge">
+                    🚀 Challenge Mode
+                </option>
+
+            </select>
+
+
+            <!-- DIFFICULTY -->
+
+            <select id="difficulty">
+
+                <option value="">
+                    Select difficulty
+                </option>
+
+
+                <option value="easy">
+                    🟢 Easy
+                </option>
+
+
+                <option value="medium">
+                    🟡 Medium
+                </option>
+
+
+                <option value="hard">
+                    🔴 Hard
+                </option>
+
+            </select>
+
+
+            <!-- TIMER -->
+
+            <select id="timer-choice">
+
+                <option value="no">
+                    ⏳ No Timer
+                </option>
+
+
+                <option value="yes">
+                    ⏱️ Use 30-Second Timer
+                </option>
+
+            </select>
+
+
+            <!-- START -->
+
+            <button
+                type="button"
+                onclick="startQuiz()"
+            >
+
+                🚀 Start 20-Question Quiz
+
+            </button>
+
+
+            <!-- CHALLENGE MODE INFORMATION -->
+
+            <div
+                id="challenge-info"
+                class="challenge-info hidden"
+            >
+
+                <h3>
+                    🚀 Challenge Mode
+                </h3>
+
+                <p>
+                    Questions become harder as you progress!
+                </p>
+
+                <p>
+                    Questions 1–5: Easy
+                    <br>
+
+                    Questions 6–10: Medium
+                    <br>
+
+                    Questions 11–15: Hard
+                    <br>
+
+                    Questions 16–20: Expert Challenge
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             QUIZ SCREEN
+        ====================================== -->
+
+        <div
+            id="quiz-screen"
+            class="hidden"
+        >
+
+
+            <!-- TOP AREA -->
+
+            <div class="quiz-top">
+
+
+                <button
+                    type="button"
+                    class="back-button"
+                    onclick="goBackHome()"
+                >
+
+                    ⬅ Back to Home
+
+                </button>
+
+
+                <p id="welcome-message">
+
+                    Good luck!
+
+                </p>
+
+
+                <div
+                    id="timer-box"
+                    class="hidden"
+                >
+
+                    ⏱️
+
+                    <span id="timer">
+                        30
+                    </span>
+
+                    seconds
+
+                </div>
+
+
+            </div>
+
+
+            <!-- CHALLENGE LEVEL -->
+
+            <div
+                id="challenge-level"
+                class="challenge-level hidden"
+            >
+
+                🚀 Challenge Level:
+                <span id="challenge-level-text">
+                    Easy
+                </span>
+
+            </div>
+
+
+            <!-- QUESTION NUMBER -->
+
+            <div class="progress-info">
+
+                Question
+
+                <span id="question-number">
+                    1
+                </span>
+
+                of 20
+
+            </div>
+
+
+            <!-- PROGRESS BAR -->
+
+            <div class="progress-bar">
+
+                <div
+                    id="progress-fill"
+                ></div>
+
+            </div>
+
+
+            <!-- SCORE AND STREAK -->
+
+            <div class="stats">
+
+
+                <div>
+
+                    ⭐ Score:
+
+                    <span id="score">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    🔥 Streak:
+
+                    <span id="streak">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    🏆 Best:
+
+                    <span id="best-streak">
+                        0
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- QUESTION TYPE -->
+
+            <div
+                id="question-type"
+                class="question-type"
+            >
+
+                Maths Question
+
+            </div>
+
+
+            <!-- QUESTION -->
+
+            <h2 id="question">
+
+                Your question will appear here.
+
+            </h2>
+
+
+            <!-- ANSWER -->
+
+            <input
+                type="text"
+                id="answer"
+                placeholder="Enter your answer"
+                autocomplete="off"
+            >
+
+
+            <!-- BUTTONS -->
+
+            <div class="button-row">
+
+
+                <button
+                    type="button"
+                    onclick="checkAnswer()"
+                >
+
+                    ✅ Check Answer
+
+                </button>
+
+
+                <button
+                    type="button"
+                    id="hint-button"
+                    class="hint-button"
+                    onclick="showHint()"
+                >
+
+                    💡 Hint
+
+                </button>
+
+
+            </div>
+
+
+            <!-- HINT -->
+
+            <div
+                id="hint-box"
+                class="hint-box hidden"
+            ></div>
+
+
+            <!-- FEEDBACK -->
+
+            <div
+                id="feedback"
+            ></div>
+
+
+            <!-- EXPLANATION -->
+
+            <div
+                id="explanation"
+                class="explanation hidden"
+            ></div>
+
+
+        </div>
+
+
+        <!-- =====================================
+             RESULT SCREEN
+        ====================================== -->
+
+        <div
+            id="result-screen"
+            class="hidden"
+        >
+
+
+            <h2>
+                🎉 Quiz Complete!
+            </h2>
+
+
+            <!-- SCORE -->
+
+            <div class="result-score">
+
+                <span id="final-score">
+                    0
+                </span>
+
+                /
+
+                <span id="final-total">
+                    20
+                </span>
+
+            </div>
+
+
+            <div
+                id="final-percentage"
+                class="final-percentage"
+            >
+
+                0%
+
+            </div>
+
+
+            <!-- PERSONALIZED FEEDBACK -->
+
+            <div class="personal-feedback">
+
+                <h3>
+                    🧠 Your Personal Learning Feedback
+                </h3>
+
+                <p id="personal-feedback-text">
+
+                    Your personalized feedback
+                    will appear here.
+
+                </p>
+
+            </div>
+
+
+            <!-- STRENGTH -->
+
+            <div
+                id="strength-box"
+                class="performance-box"
+            >
+
+                <h3>
+                    🌟 Your Strength
+                </h3>
+
+                <p id="strength-text">
+
+                    Keep solving questions!
+
+                </p>
+
+            </div>
+
+
+            <!-- PRACTISE -->
+
+            <div
+                id="practice-box"
+                class="performance-box"
+            >
+
+                <h3>
+                    📚 Practise More
+                </h3>
+
+                <p id="practice-text">
+
+                    Keep practising to improve.
+
+                </p>
+
+            </div>
+
+
+            <!-- BADGES -->
+
+            <div class="badges-section">
+
+                <h3>
+                    🏆 Badges Earned
+                </h3>
+
+                <div
+                    id="badges-container"
+                    class="badges-container"
+                >
+
+                    <!-- Badges appear here -->
+
+                </div>
+
+            </div>
+
+
+            <!-- RESULT BUTTONS -->
+
+            <div class="result-buttons">
+
+
+                <button
+                    type="button"
+                    onclick="restartQuiz()"
+                >
+
+                    🔄 Try Another Quiz
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="back-button"
+                    onclick="goBackHome()"
+                >
+
+                    ⬅ Back to Home
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>

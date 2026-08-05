@@ -1,0 +1,1241 @@
+/* =========================================
+   MATHMIND AI - COMPLETE CSS
+========================================= */
+
+
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   PAGE
+========================================= */
+
+body {
+    margin: 0;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 20px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dbeafe,
+            #ede9fe,
+            #fce7f3
+        );
+}
+
+
+/* =========================================
+   MAIN CONTAINER
+========================================= */
+
+.container {
+    width: 100%;
+
+    max-width: 800px;
+
+    padding: 40px;
+
+    text-align: center;
+
+    background: white;
+
+    border-radius: 25px;
+
+    box-shadow:
+        0 18px 50px
+        rgba(
+            0,
+            0,
+            0,
+            0.16
+        );
+}
+
+
+/* =========================================
+   HEADINGS
+========================================= */
+
+h1 {
+    margin:
+        0
+        0
+        10px;
+
+    color: #111827;
+
+    font-size: 44px;
+}
+
+
+h2 {
+    color: #1f2937;
+}
+
+
+h3 {
+    color: #374151;
+}
+
+
+/* =========================================
+   SUBTITLE
+========================================= */
+
+.subtitle {
+    margin:
+        0
+        0
+        30px;
+
+    color: #6b7280;
+
+    font-size: 20px;
+}
+
+
+/* =========================================
+   INPUTS AND DROPDOWNS
+========================================= */
+
+input,
+select {
+    width: 100%;
+
+    margin:
+        10px
+        0;
+
+    padding: 16px;
+
+    border:
+        2px solid
+        #d1d5db;
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background: white;
+
+    color: #111827;
+
+    font-size: 18px;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+
+input:focus,
+select:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0
+        0
+        0
+        4px
+        rgba(
+            37,
+            99,
+            235,
+            0.14
+        );
+}
+
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+button {
+    margin: 10px;
+
+    padding:
+        15px
+        25px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s,
+        background 0.2s,
+        box-shadow 0.2s;
+}
+
+
+button:hover {
+    transform:
+        translateY(-2px);
+
+    background: #1d4ed8;
+
+    box-shadow:
+        0
+        8px
+        18px
+        rgba(
+            37,
+            99,
+            235,
+            0.25
+        );
+}
+
+
+button:active {
+    transform:
+        translateY(0);
+}
+
+
+button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+
+/* =========================================
+   HIDDEN
+========================================= */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================
+   CHALLENGE MODE INFORMATION
+========================================= */
+
+.challenge-info {
+    margin-top: 25px;
+
+    padding: 20px;
+
+    border:
+        2px solid
+        #f59e0b;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fffbeb,
+            #fef3c7
+        );
+
+    color: #78350f;
+
+    text-align: left;
+}
+
+
+.challenge-info h3 {
+    margin-top: 0;
+
+    color: #92400e;
+
+    text-align: center;
+
+    font-size: 22px;
+}
+
+
+.challenge-info p {
+    line-height: 1.7;
+}
+
+
+/* =========================================
+   QUIZ TOP
+========================================= */
+
+.quiz-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 15px;
+}
+
+
+/* =========================================
+   BACK BUTTON
+========================================= */
+
+.back-button {
+    width: auto;
+
+    min-width: 145px;
+
+    margin: 0;
+
+    padding:
+        11px
+        16px;
+
+    background: #6b7280;
+
+    font-size: 15px;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
+}
+
+
+.back-button:hover {
+    background: #4b5563;
+
+    box-shadow:
+        0
+        7px
+        15px
+        rgba(
+            75,
+            85,
+            99,
+            0.25
+        );
+}
+
+
+/* =========================================
+   WELCOME MESSAGE
+========================================= */
+
+#welcome-message {
+    flex: 1;
+
+    margin: 0;
+
+    color: #374151;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    text-align: center;
+}
+
+
+/* =========================================
+   TIMER
+========================================= */
+
+#timer-box {
+    padding:
+        10px
+        16px;
+
+    border:
+        1px solid
+        #fbbf24;
+
+    border-radius: 12px;
+
+    background: #fef3c7;
+
+    color: #78350f;
+
+    font-weight: bold;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
+}
+
+
+#timer {
+    font-size: 20px;
+}
+
+
+/* =========================================
+   CHALLENGE LEVEL
+========================================= */
+
+.challenge-level {
+    margin:
+        15px
+        auto;
+
+    padding:
+        12px
+        20px;
+
+    width: fit-content;
+
+    border:
+        2px solid
+        #7c3aed;
+
+    border-radius: 30px;
+
+    background: #f5f3ff;
+
+    color: #5b21b6;
+
+    font-size: 17px;
+
+    font-weight: bold;
+}
+
+
+#challenge-level-text {
+    color: #7c3aed;
+}
+
+
+/* =========================================
+   QUESTION NUMBER
+========================================= */
+
+.progress-info {
+    margin-top: 20px;
+
+    color: #374151;
+
+    font-size: 18px;
+
+    font-weight: bold;
+}
+
+
+/* =========================================
+   PROGRESS BAR
+========================================= */
+
+.progress-bar {
+    width: 100%;
+
+    height: 15px;
+
+    margin:
+        12px
+        0
+        20px;
+
+    overflow: hidden;
+
+    border-radius: 20px;
+
+    background: #e5e7eb;
+}
+
+
+#progress-fill {
+    width: 0%;
+
+    height: 100%;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #7c3aed
+        );
+
+    transition:
+        width 0.4s ease;
+}
+
+
+/* =========================================
+   SCORE AND STREAK
+========================================= */
+
+.stats {
+    display: flex;
+
+    justify-content: space-around;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+
+    padding: 16px;
+
+    border-radius: 15px;
+
+    background: #f3f4f6;
+
+    color: #1f2937;
+
+    font-weight: bold;
+}
+
+
+.stats div {
+    padding:
+        5px
+        10px;
+}
+
+
+/* =========================================
+   QUESTION TYPE
+========================================= */
+
+.question-type {
+    display: inline-block;
+
+    margin:
+        5px
+        0
+        12px;
+
+    padding:
+        8px
+        16px;
+
+    border-radius: 25px;
+
+    background: #e0e7ff;
+
+    color: #3730a3;
+
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+
+/* =========================================
+   QUESTION
+========================================= */
+
+#question {
+    margin:
+        20px
+        0;
+
+    padding: 28px;
+
+    border-radius: 18px;
+
+    background: #eff6ff;
+
+    color: #1e3a8a;
+
+    font-size: 28px;
+
+    line-height: 1.55;
+
+    word-break: break-word;
+}
+
+
+/* Word problems need left alignment */
+
+.word-problem {
+    text-align: left;
+
+    font-size: 23px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================
+   ANSWER INPUT
+========================================= */
+
+#answer {
+    text-align: center;
+
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+/* =========================================
+   QUIZ BUTTONS
+========================================= */
+
+.button-row {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+
+.button-row button {
+    min-width: 170px;
+}
+
+
+/* =========================================
+   HINT BUTTON
+========================================= */
+
+.hint-button {
+    background: #f59e0b;
+}
+
+
+.hint-button:hover {
+    background: #d97706;
+
+    box-shadow:
+        0
+        7px
+        15px
+        rgba(
+            245,
+            158,
+            11,
+            0.25
+        );
+}
+
+
+/* =========================================
+   HINT BOX
+========================================= */
+
+.hint-box {
+    margin:
+        15px
+        0;
+
+    padding: 18px;
+
+    border:
+        1px solid
+        #fbbf24;
+
+    border-radius: 12px;
+
+    background: #fef3c7;
+
+    color: #78350f;
+
+    font-size: 17px;
+
+    line-height: 1.6;
+
+    text-align: left;
+}
+
+
+/* =========================================
+   FEEDBACK
+========================================= */
+
+#feedback {
+    min-height: 35px;
+
+    margin-top: 15px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* =========================================
+   EXPLANATION
+========================================= */
+
+.explanation {
+    margin-top: 15px;
+
+    padding: 18px;
+
+    border:
+        1px solid
+        #d1d5db;
+
+    border-radius: 12px;
+
+    background: #f3f4f6;
+
+    color: #374151;
+
+    font-size: 17px;
+
+    line-height: 1.7;
+
+    text-align: left;
+
+    white-space: pre-line;
+}
+
+
+/* =========================================
+   RESULT SCREEN
+========================================= */
+
+#result-screen {
+    animation:
+        resultAppear
+        0.5s
+        ease;
+}
+
+
+@keyframes resultAppear {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(15px);
+
+    }
+
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+/* =========================================
+   FINAL SCORE
+========================================= */
+
+.result-score {
+    margin:
+        20px
+        0
+        5px;
+
+    color: #2563eb;
+
+    font-size: 56px;
+
+    font-weight: bold;
+}
+
+
+.final-percentage {
+    margin-bottom: 25px;
+
+    color: #7c3aed;
+
+    font-size: 28px;
+
+    font-weight: bold;
+}
+
+
+/* =========================================
+   PERSONALIZED FEEDBACK
+========================================= */
+
+.personal-feedback {
+    margin:
+        20px
+        0;
+
+    padding: 24px;
+
+    border:
+        2px solid
+        #7c3aed;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f5f3ff,
+            #ede9fe
+        );
+
+    color: #4c1d95;
+
+    text-align: left;
+}
+
+
+.personal-feedback h3 {
+    margin-top: 0;
+
+    color: #5b21b6;
+
+    text-align: center;
+}
+
+
+.personal-feedback p {
+    margin-bottom: 0;
+
+    font-size: 17px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================
+   PERFORMANCE BOXES
+========================================= */
+
+.performance-box {
+    margin:
+        18px
+        0;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    text-align: left;
+}
+
+
+.performance-box h3 {
+    margin-top: 0;
+}
+
+
+.performance-box p {
+    margin-bottom: 0;
+
+    line-height: 1.6;
+}
+
+
+#strength-box {
+    border:
+        2px solid
+        #86efac;
+
+    background: #f0fdf4;
+
+    color: #166534;
+}
+
+
+#strength-box h3 {
+    color: #15803d;
+}
+
+
+#practice-box {
+    border:
+        2px solid
+        #fdba74;
+
+    background: #fff7ed;
+
+    color: #9a3412;
+}
+
+
+#practice-box h3 {
+    color: #c2410c;
+}
+
+
+/* =========================================
+   BADGES
+========================================= */
+
+.badges-section {
+    margin-top: 25px;
+
+    padding: 25px;
+
+    border-radius: 20px;
+
+    background: #f8fafc;
+}
+
+
+.badges-section h3 {
+    margin-top: 0;
+
+    font-size: 23px;
+}
+
+
+.badges-container {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: stretch;
+
+    flex-wrap: wrap;
+
+    gap: 15px;
+}
+
+
+/* Individual badge */
+
+.badge {
+    width: 145px;
+
+    min-height: 145px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 15px;
+
+    border:
+        2px solid
+        #fbbf24;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fffbeb,
+            #fef3c7
+        );
+
+    color: #78350f;
+
+    box-shadow:
+        0
+        6px
+        15px
+        rgba(
+            245,
+            158,
+            11,
+            0.15
+        );
+
+    animation:
+        badgeAppear
+        0.5s
+        ease;
+}
+
+
+@keyframes badgeAppear {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            scale(0.8);
+
+    }
+
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            scale(1);
+
+    }
+
+}
+
+
+.badge-icon {
+    margin-bottom: 8px;
+
+    font-size: 42px;
+}
+
+
+.badge-name {
+    font-size: 16px;
+
+    font-weight: bold;
+
+    text-align: center;
+}
+
+
+.badge-description {
+    margin-top: 5px;
+
+    color: #92400e;
+
+    font-size: 12px;
+
+    text-align: center;
+
+    line-height: 1.35;
+}
+
+
+/* No badge message */
+
+.no-badge {
+    width: 100%;
+
+    padding: 20px;
+
+    color: #6b7280;
+
+    font-size: 16px;
+}
+
+
+/* =========================================
+   RESULT BUTTONS
+========================================= */
+
+.result-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+
+.result-buttons button {
+    margin: 0;
+}
+
+
+/* =========================================
+   MOBILE DESIGN
+========================================= */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+    }
+
+
+    .container {
+        padding:
+            25px
+            17px;
+
+        border-radius: 20px;
+    }
+
+
+    h1 {
+        font-size: 33px;
+    }
+
+
+    .subtitle {
+        font-size: 17px;
+    }
+
+
+    input,
+    select {
+        padding: 14px;
+
+        font-size: 16px;
+    }
+
+
+    /* Quiz header */
+
+    .quiz-top {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 10px;
+    }
+
+
+    .back-button {
+        width: 100%;
+
+        margin: 0;
+    }
+
+
+    #welcome-message {
+        text-align: center;
+    }
+
+
+    #timer-box {
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    /* Score */
+
+    .stats {
+        flex-direction: column;
+
+        gap: 4px;
+    }
+
+
+    /* Question */
+
+    #question {
+        padding: 20px;
+
+        font-size: 23px;
+    }
+
+
+    .word-problem {
+        font-size: 19px;
+    }
+
+
+    /* Buttons */
+
+    .button-row {
+        flex-direction: column;
+    }
+
+
+    .button-row button {
+        width: 100%;
+
+        margin:
+            4px
+            0;
+    }
+
+
+    button {
+        width: 100%;
+
+        margin:
+            6px
+            0;
+
+        font-size: 17px;
+    }
+
+
+    /* Result score */
+
+    .result-score {
+        font-size: 46px;
+    }
+
+
+    .final-percentage {
+        font-size: 24px;
+    }
+
+
+    /* Feedback */
+
+    .personal-feedback,
+    .performance-box {
+        padding: 18px;
+    }
+
+
+    /* Badges */
+
+    .badges-container {
+        gap: 10px;
+    }
+
+
+    .badge {
+        width: 130px;
+
+        min-height: 135px;
+    }
+
+
+    /* Result buttons */
+
+    .result-buttons {
+        flex-direction: column;
+    }
+
+
+    .result-buttons button {
+        width: 100%;
+    }
+
+}
