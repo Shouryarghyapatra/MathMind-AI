@@ -1,1649 +1,637 @@
-/* =====================================================
-   MATHMIND AI
-   COMPLETE JAVASCRIPT WITH DESCRIPTIVE + MCQ MODE
-===================================================== */
+//=====================================================
+// MATHMIND AI
+// SCRIPT.JS
+// PART 1
+// GLOBAL VARIABLES & INITIALIZATION
+//=====================================================
 
+"use strict";
 
-/* =====================================================
-   GLOBAL VARIABLES
-===================================================== */
+//=====================================================
+// QUIZ SETTINGS
+//=====================================================
 
-let selectedTopic = "";
-let selectedDifficulty = "";
-let selectedQuestionFormat = "descriptive";
+const TOTAL_QUESTIONS = 20;
+const QUESTION_TIME = 30;
+const XP_PER_CORRECT = 10;
 
-let studentName = "";
+//=====================================================
+// QUIZ STATE
+//=====================================================
 
-let timerEnabled = false;
-let timeLeft = 30;
-let timerInterval = null;
+let currentQuestion = null;
 
-let currentQuestion = 0;
-
-const totalQuestions = 20;
+let currentQuestionNumber = 0;
 
 let score = 0;
 
 let streak = 0;
+
 let bestStreak = 0;
 
-let currentAnswer = 0;
+let xp = 0;
 
-let currentQuestionText = "";
+let level = 1;
 
-let currentHint = "";
+let timer = QUESTION_TIME;
 
-let currentExplanation = "";
+let timerInterval = null;
 
-let currentQuestionIsWordProblem = false;
+let selectedTopic = "";
 
-let questionAnswered = false;
+let selectedDifficulty = "";
 
-let quizResults = [];
+let questionFormat = "descriptive";
 
-let currentMCQOptions = [];
+let timerEnabled = false;
 
+let studentName = "";
 
-/* =====================================================
-   HELPER FUNCTIONS
-===================================================== */
+let challengeMode = false;
 
-function randomNumber(min, max) {
+let mixedMode = false;
+
+let quizFinished = false;
+
+let answered = false;
+
+//=====================================================
+// ARRAYS
+//=====================================================
+
+let askedQuestions = [];
+
+let earnedBadges = [];
+
+//=====================================================
+// DOM ELEMENTS
+//=====================================================
+
+const welcomeScreen =
+document.getElementById("welcome-screen");
+
+const quizScreen =
+document.getElementById("quiz-screen");
+
+const resultScreen =
+document.getElementById("result-screen");
+
+//=====================================================
+
+const studentInput =
+document.getElementById("student-name");
+
+const topicSelect =
+document.getElementById("topic");
+
+const difficultySelect =
+document.getElementById("difficulty");
+
+const timerChoice =
+document.getElementById("timer-choice");
+
+const formatSelect =
+document.getElementById("question-format");
+
+//=====================================================
+
+const questionElement =
+document.getElementById("question");
+
+const questionNumberElement =
+document.getElementById("question-number");
+
+const progressFill =
+document.getElementById("progress-fill");
+
+//=====================================================
+
+const scoreElement =
+document.getElementById("score");
+
+const streakElement =
+document.getElementById("streak");
+
+const bestStreakElement =
+document.getElementById("best-streak");
+
+//=====================================================
+
+const answerInput =
+document.getElementById("answer");
+
+const feedbackElement =
+document.getElementById("feedback");
+
+const explanationElement =
+document.getElementById("explanation");
+
+const hintBox =
+document.getElementById("hint-box");
+
+//=====================================================
+
+const descriptiveArea =
+document.getElementById("descriptive-answer-area");
+
+const mcqArea =
+document.getElementById("mcq-answer-area");
+
+const mcqOptions =
+document.getElementById("mcq-options");
+
+//=====================================================
+
+const timerBox =
+document.getElementById("timer-box");
+
+const timerText =
+document.getElementById("timer");
+
+//=====================================================
+
+const challengeLevel =
+document.getElementById("challenge-level");
+
+const challengeText =
+document.getElementById("challenge-level-text");
+
+//=====================================================
+// RESULT SCREEN
+//=====================================================
+
+const finalScore =
+document.getElementById("final-score");
+
+const finalTotal =
+document.getElementById("final-total");
+
+const finalPercentage =
+document.getElementById("final-percentage");
+
+const personalFeedback =
+document.getElementById("personal-feedback-text");
+
+const strengthText =
+document.getElementById("strength-text");
+
+const practiceText =
+document.getElementById("practice-text");
+
+const badgeContainer =
+document.getElementById("badges-container");
+
+//=====================================================
+// TOPIC REGISTRY
+//=====================================================
+
+const questionGenerators = {
+
+    addition:
+        window.generateAdditionQuestion,
+
+    subtraction:
+        window.generateSubtractionQuestion,
+
+    multiplication:
+        window.generateMultiplicationQuestion,
+
+    division:
+        window.generateDivisionQuestion,
+
+    fractions:
+        window.generateFractionsQuestion,
+
+    decimals:
+        window.generateDecimalsQuestion,
+
+    percentages:
+        window.generatePercentagesQuestion,
+
+    ratio:
+        window.generateRatioQuestion,
+
+    factors:
+        window.generateFactorsQuestion,
+
+    algebra:
+        window.generateAlgebraQuestion
+
+};
+
+//=====================================================
+// MIXED MODE TOPICS
+//=====================================================
+
+const mixedTopics = [
+
+    "addition",
+
+    "subtraction",
+
+    "multiplication",
+
+    "division",
+
+    "fractions",
+
+    "decimals",
+
+    "percentages",
+
+    "ratio",
+
+    "factors",
+
+    "algebra"
+
+];
+
+//=====================================================
+// CHALLENGE LEVELS
+//=====================================================
+
+const challengeLevels = [
+
+    "easy",
+
+    "easy",
+
+    "easy",
+
+    "easy",
+
+    "easy",
+
+    "medium",
+
+    "medium",
+
+    "medium",
+
+    "medium",
+
+    "medium",
+
+    "hard",
+
+    "hard",
+
+    "hard",
+
+    "hard",
+
+    "hard",
+
+    "expert",
+
+    "expert",
+
+    "expert",
+
+    "expert",
+
+    "expert"
+
+];
+
+//=====================================================
+// RANDOM INTEGER
+//=====================================================
+
+function rand(min,max){
 
     return Math.floor(
-        Math.random() *
-        (max - min + 1)
-    ) + min;
+
+        Math.random()*
+
+        (max-min+1)
+
+    )+min;
 
 }
 
+//=====================================================
+// SHUFFLE ARRAY
+//=====================================================
 
-function gcd(a, b) {
+function shuffle(array){
 
-    a = Math.abs(a);
+    return [...array].sort(
 
-    b = Math.abs(b);
+        ()=>Math.random()-0.5
 
-    while (b !== 0) {
-
-        const temporary = b;
-
-        b = a % b;
-
-        a = temporary;
-
-    }
-
-    return a;
-
-}
-
-
-function simplifyFraction(
-    numerator,
-    denominator
-) {
-
-    const divisor =
-        gcd(
-            numerator,
-            denominator
-        );
-
-    return {
-
-        numerator:
-            numerator / divisor,
-
-        denominator:
-            denominator / divisor
-
-    };
-
-}
-
-
-function formatNumber(number) {
-
-    if (
-        Number.isInteger(number)
-    ) {
-
-        return number.toString();
-
-    }
-
-    return Number(
-        number.toFixed(4)
-    ).toString();
-
-}
-
-
-function shuffleArray(array) {
-
-    for (
-        let i =
-            array.length - 1;
-
-        i > 0;
-
-        i--
-    ) {
-
-        const randomIndex =
-            Math.floor(
-                Math.random() *
-                (i + 1)
-            );
-
-
-        const temporary =
-            array[i];
-
-
-        array[i] =
-            array[randomIndex];
-
-
-        array[randomIndex] =
-            temporary;
-
-    }
-
-    return array;
-
-}
-
-
-function answersAreEqual(
-    first,
-    second
-) {
-
-    return (
-        Math.abs(
-            Number(first) -
-            Number(second)
-        ) < 0.0001
     );
 
 }
 
+//=====================================================
+// RESET QUIZ
+//=====================================================
 
-function getChallengeDifficulty() {
+function resetQuiz(){
 
-    if (
-        currentQuestion < 5
-    ) {
+    currentQuestion=null;
+
+    currentQuestionNumber=0;
+
+    score=0;
+
+    streak=0;
+
+    bestStreak=0;
+
+    xp=0;
+
+    level=1;
+
+    timer=QUESTION_TIME;
+
+    answered=false;
+
+    quizFinished=false;
+
+    askedQuestions=[];
+
+    earnedBadges=[];
+
+}
+
+//=====================================================
+// END PART 1
+//=====================================================
+//=====================================================
+// PART 2
+// START QUIZ & NAVIGATION
+//=====================================================
+
+//=====================================================
+// START QUIZ
+//=====================================================
+
+function startQuiz(){
+
+    studentName = studentInput.value.trim();
+
+    if(studentName===""){
+
+        alert("Please enter your name.");
+
+        return;
+
+    }
+
+    selectedTopic = topicSelect.value;
+
+    if(selectedTopic===""){
+
+        alert("Please choose a topic.");
+
+        return;
+
+    }
+
+    selectedDifficulty = difficultySelect.value;
+
+    if(selectedDifficulty===""){
+
+        alert("Please choose a difficulty.");
+
+        return;
+
+    }
+
+    questionFormat = formatSelect.value;
+
+    timerEnabled = timerChoice.value==="yes";
+
+    mixedMode = selectedTopic==="mixed";
+
+    challengeMode = selectedTopic==="challenge";
+
+    resetQuiz();
+
+    welcomeScreen.classList.add("hidden");
+
+    resultScreen.classList.add("hidden");
+
+    quizScreen.classList.remove("hidden");
+
+    document.getElementById("welcome-message").textContent =
+    `Good Luck, ${studentName}!`;
+
+    if(timerEnabled){
+
+        timerBox.classList.remove("hidden");
+
+    }
+
+    else{
+
+        timerBox.classList.add("hidden");
+
+    }
+
+    if(challengeMode){
+
+        challengeLevel.classList.remove("hidden");
+
+    }
+
+    else{
+
+        challengeLevel.classList.add("hidden");
+
+    }
+
+    updateDashboard();
+
+    loadQuestion();
+
+}
+
+//=====================================================
+// GO HOME
+//=====================================================
+
+function goBackHome(){
+
+    stopTimer();
+
+    welcomeScreen.classList.remove("hidden");
+
+    quizScreen.classList.add("hidden");
+
+    resultScreen.classList.add("hidden");
+
+}
+
+//=====================================================
+// RESTART QUIZ
+//=====================================================
+
+function restartQuiz(){
+
+    stopTimer();
+
+    resetQuiz();
+
+    startQuiz();
+
+}
+
+//=====================================================
+// UPDATE DASHBOARD
+//=====================================================
+
+function updateDashboard(){
+
+    scoreElement.textContent = score;
+
+    streakElement.textContent = streak;
+
+    bestStreakElement.textContent = bestStreak;
+
+    questionNumberElement.textContent =
+    currentQuestionNumber + 1;
+
+    const progress =
+    (currentQuestionNumber / TOTAL_QUESTIONS) * 100;
+
+    progressFill.style.width =
+    progress + "%";
+
+}
+
+//=====================================================
+// START TIMER
+//=====================================================
+
+function startTimer(){
+
+    if(!timerEnabled){
+
+        return;
+
+    }
+
+    stopTimer();
+
+    timer = QUESTION_TIME;
+
+    timerText.textContent = timer;
+
+    timerInterval = setInterval(()=>{
+
+        timer--;
+
+        timerText.textContent = timer;
+
+        if(timer<=0){
+
+            stopTimer();
+
+            checkAnswer(true);
+
+        }
+
+    },1000);
+
+}
+
+//=====================================================
+// STOP TIMER
+//=====================================================
+
+function stopTimer(){
+
+    if(timerInterval){
+
+        clearInterval(timerInterval);
+
+        timerInterval = null;
+
+    }
+
+}
+
+//=====================================================
+// GET CHALLENGE DIFFICULTY
+//=====================================================
+
+function getChallengeDifficulty(){
+
+    if(currentQuestionNumber<5){
 
         return "easy";
 
     }
 
-
-    if (
-        currentQuestion < 10
-    ) {
+    if(currentQuestionNumber<10){
 
         return "medium";
 
     }
 
-
-    if (
-        currentQuestion < 15
-    ) {
+    if(currentQuestionNumber<15){
 
         return "hard";
 
     }
 
-
     return "expert";
 
 }
 
+//=====================================================
+// GET RANDOM TOPIC
+//=====================================================
 
-/* =====================================================
-   START QUIZ
-===================================================== */
+function getRandomTopic(){
 
-function startQuiz() {
-
-    studentName =
-        document
-        .getElementById(
-            "student-name"
-        )
-        .value
-        .trim();
-
-
-    selectedTopic =
-        document
-        .getElementById(
-            "topic"
-        )
-        .value;
-
-
-    selectedDifficulty =
-        document
-        .getElementById(
-            "difficulty"
-        )
-        .value;
-
-
-    selectedQuestionFormat =
-        document
-        .getElementById(
-            "question-format"
-        )
-        .value;
-
-
-    timerEnabled =
-        document
-        .getElementById(
-            "timer-choice"
-        )
-        .value === "yes";
-
-
-    if (
-        studentName === ""
-    ) {
-
-        alert(
-            "Please enter your name."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        selectedTopic === ""
-    ) {
-
-        alert(
-            "Please select a topic."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        selectedTopic !==
-        "challenge" &&
-        selectedDifficulty === ""
-    ) {
-
-        alert(
-            "Please select a difficulty."
-        );
-
-        return;
-
-    }
-
-
-    currentQuestion = 0;
-
-    score = 0;
-
-    streak = 0;
-
-    bestStreak = 0;
-
-    quizResults = [];
-
-
-    document
-        .getElementById(
-            "welcome-screen"
-        )
-        .classList
-        .add("hidden");
-
-
-    document
-        .getElementById(
-            "result-screen"
-        )
-        .classList
-        .add("hidden");
-
-
-    document
-        .getElementById(
-            "quiz-screen"
-        )
-        .classList
-        .remove("hidden");
-
-
-    document
-        .getElementById(
-            "welcome-message"
-        )
-        .textContent =
-        "Good luck, " +
-        studentName +
-        "!";
-
-
-    if (
-        timerEnabled
-    ) {
-
-        document
-            .getElementById(
-                "timer-box"
-            )
-            .classList
-            .remove("hidden");
-
-    }
-
-    else {
-
-        document
-            .getElementById(
-                "timer-box"
-            )
-            .classList
-            .add("hidden");
-
-    }
-
-
-    if (
-        selectedTopic ===
-        "challenge"
-    ) {
-
-        document
-            .getElementById(
-                "challenge-level"
-            )
-            .classList
-            .remove("hidden");
-
-    }
-
-    else {
-
-        document
-            .getElementById(
-                "challenge-level"
-            )
-            .classList
-            .add("hidden");
-
-    }
-
-
-    updateStats();
-
-    generateQuestion();
+    return mixedTopics[
+        rand(0,mixedTopics.length-1)
+    ];
 
 }
 
+//=====================================================
+// END PART 2
+//=====================================================
+//=====================================================
+// PART 3A
+// LOAD QUESTIONS
+//=====================================================
 
-/* =====================================================
-   UPDATE STATS
-===================================================== */
+//=====================================================
+// LOAD QUESTION
+//=====================================================
 
-function updateStats() {
+function loadQuestion(){
 
-    document
-        .getElementById(
-            "score"
-        )
-        .textContent =
-        score;
+    stopTimer();
 
+    answered = false;
 
-    document
-        .getElementById(
-            "streak"
-        )
-        .textContent =
-        streak;
+    feedbackElement.innerHTML = "";
 
+    explanationElement.innerHTML = "";
 
-    document
-        .getElementById(
-            "best-streak"
-        )
-        .textContent =
-        bestStreak;
+    explanationElement.classList.add("hidden");
 
+    hintBox.innerHTML = "";
 
-    document
-        .getElementById(
-            "question-number"
-        )
-        .textContent =
-        Math.min(
-            currentQuestion + 1,
-            totalQuestions
-        );
-
-
-    const progress =
-
-        (
-            currentQuestion /
-            totalQuestions
-        ) * 100;
-
-
-    document
-        .getElementById(
-            "progress-fill"
-        )
-        .style
-        .width =
-        progress + "%";
-
-}
-
-
-/* =====================================================
-   GENERATE QUESTION
-===================================================== */
-
-function generateQuestion() {
-
-    clearInterval(
-        timerInterval
-    );
-
-
-    questionAnswered = false;
-
-    currentQuestionIsWordProblem =
-        false;
-
-
-    const answerInput =
-        document
-        .getElementById(
-            "answer"
-        );
-
+    hintBox.classList.add("hidden");
 
     answerInput.value = "";
 
-    answerInput.disabled =
-        false;
+    mcqOptions.innerHTML = "";
 
+    //-------------------------------------------------
+    // QUIZ FINISHED?
+    //-------------------------------------------------
 
-    document
-        .getElementById(
-            "feedback"
-        )
-        .textContent =
-        "";
-
-
-    document
-        .getElementById(
-            "feedback"
-        )
-        .className =
-        "feedback";
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .textContent =
-        "";
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .classList
-        .add("hidden");
-
-
-    document
-        .getElementById(
-            "hint-box"
-        )
-        .textContent =
-        "";
-
-
-    document
-        .getElementById(
-            "hint-box"
-        )
-        .classList
-        .add("hidden");
-
-
-    document
-        .getElementById(
-            "mcq-options"
-        )
-        .innerHTML =
-        "";
-
-
-    let activeDifficulty =
-        selectedDifficulty;
-
-
-    if (
-        selectedTopic ===
-        "challenge"
-    ) {
-
-        activeDifficulty =
-            getChallengeDifficulty();
-
-
-        document
-            .getElementById(
-                "challenge-level-text"
-            )
-            .textContent =
-
-            activeDifficulty
-            .charAt(0)
-            .toUpperCase()
-
-            +
-
-            activeDifficulty
-            .slice(1);
-
-    }
-
-
-    /*
-       Expert uses hard-level
-       question generation.
-    */
-
-    if (
-        activeDifficulty ===
-        "expert"
-    ) {
-
-        activeDifficulty =
-            "hard";
-
-    }
-
-
-    let activeTopic =
-        selectedTopic;
-
-
-    if (
-        selectedTopic ===
-        "mixed" ||
-
-        selectedTopic ===
-        "challenge"
-    ) {
-
-        const topics = [
-
-            "addition",
-
-            "subtraction",
-
-            "multiplication",
-
-            "division",
-
-            "fractions",
-
-            "decimals",
-
-            "percentages",
-
-            "ratio",
-
-            "factors"
-
-        ];
-
-
-        activeTopic =
-
-            topics[
-                randomNumber(
-                    0,
-                    topics.length - 1
-                )
-            ];
-
-    }
-
-
-    const useWordProblem =
-
-        Math.random() < 0.35;
-
-
-    if (
-        useWordProblem
-    ) {
-
-        generateWordProblem(
-            activeTopic,
-            activeDifficulty
-        );
-
-    }
-
-    else {
-
-        generateNormalQuestion(
-            activeTopic,
-            activeDifficulty
-        );
-
-    }
-
-
-    document
-        .getElementById(
-            "question"
-        )
-        .textContent =
-        currentQuestionText;
-
-
-    if (
-        currentQuestionIsWordProblem
-    ) {
-
-        document
-            .getElementById(
-                "question-type"
-            )
-            .textContent =
-            "📖 Word Problem";
-
-    }
-
-    else {
-
-        document
-            .getElementById(
-                "question-type"
-            )
-            .textContent =
-            "🧮 Maths Question";
-
-    }
-
-
-    setupQuestionFormat();
-
-
-    updateStats();
-
-
-    if (
-        timerEnabled
-    ) {
-
-        startTimer();
-
-    }
-
-
-    if (
-        selectedQuestionFormat ===
-        "descriptive"
-    ) {
-
-        setTimeout(
-            function () {
-
-                answerInput.focus();
-
-            },
-            100
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   DESCRIPTIVE OR MCQ DISPLAY
-===================================================== */
-
-function setupQuestionFormat() {
-
-    const descriptiveArea =
-        document
-        .getElementById(
-            "descriptive-answer-area"
-        );
-
-
-    const mcqArea =
-        document
-        .getElementById(
-            "mcq-answer-area"
-        );
-
-
-    if (
-        selectedQuestionFormat ===
-        "mcq"
-    ) {
-
-        descriptiveArea
-            .classList
-            .add("hidden");
-
-
-        mcqArea
-            .classList
-            .remove("hidden");
-
-
-        createMCQOptions();
-
-    }
-
-    else {
-
-        descriptiveArea
-            .classList
-            .remove("hidden");
-
-
-        mcqArea
-            .classList
-            .add("hidden");
-
-    }
-
-}
-
-
-/* =====================================================
-   CREATE FOUR MCQ OPTIONS
-===================================================== */
-
-function createMCQOptions() {
-
-    const options = [
-
-        Number(
-            currentAnswer
-        )
-
-    ];
-
-
-    let attempts = 0;
-
-
-    while (
-        options.length < 4 &&
-        attempts < 100
-    ) {
-
-        attempts++;
-
-
-        const answer =
-            Number(
-                currentAnswer
-            );
-
-
-        let difference;
-
-
-        if (
-            Math.abs(answer) < 10
-        ) {
-
-            difference =
-                randomNumber(
-                    1,
-                    5
-                );
-
-        }
-
-        else if (
-            Math.abs(answer) < 100
-        ) {
-
-            difference =
-                randomNumber(
-                    2,
-                    20
-                );
-
-        }
-
-        else if (
-            Math.abs(answer) < 1000
-        ) {
-
-            difference =
-                randomNumber(
-                    10,
-                    100
-                );
-
-        }
-
-        else {
-
-            difference =
-                randomNumber(
-                    50,
-                    Math.max(
-                        100,
-                        Math.round(
-                            Math.abs(answer) *
-                            0.15
-                        )
-                    )
-                );
-
-        }
-
-
-        const direction =
-
-            Math.random() < 0.5
-
-            ?
-
-            -1
-
-            :
-
-            1;
-
-
-        let wrongAnswer =
-
-            answer +
-
-            (
-                difference *
-                direction
-            );
-
-
-        if (
-            answer % 1 !== 0
-        ) {
-
-            wrongAnswer =
-                Number(
-                    wrongAnswer
-                    .toFixed(2)
-                );
-
-        }
-
-        else {
-
-            wrongAnswer =
-                Math.round(
-                    wrongAnswer
-                );
-
-        }
-
-
-        if (
-            wrongAnswer < 0
-        ) {
-
-            wrongAnswer =
-                Math.abs(
-                    wrongAnswer
-                ) +
-                difference;
-
-        }
-
-
-        let alreadyExists =
-            false;
-
-
-        for (
-            let i = 0;
-
-            i < options.length;
-
-            i++
-        ) {
-
-            if (
-                answersAreEqual(
-                    options[i],
-                    wrongAnswer
-                )
-            ) {
-
-                alreadyExists =
-                    true;
-
-            }
-
-        }
-
-
-        if (
-            !alreadyExists
-        ) {
-
-            options.push(
-                wrongAnswer
-            );
-
-        }
-
-    }
-
-
-    currentMCQOptions =
-        shuffleArray(
-            options
-        );
-
-
-    const container =
-        document
-        .getElementById(
-            "mcq-options"
-        );
-
-
-    container.innerHTML =
-        "";
-
-
-    const letters =
-
-        [
-            "A",
-            "B",
-            "C",
-            "D"
-        ];
-
-
-    for (
-        let i = 0;
-
-        i <
-        currentMCQOptions.length;
-
-        i++
-    ) {
-
-        const optionButton =
-
-            document
-            .createElement(
-                "button"
-            );
-
-
-        optionButton.type =
-            "button";
-
-
-        optionButton.className =
-            "mcq-option";
-
-
-        optionButton.textContent =
-
-            letters[i] +
-
-            ". " +
-
-            formatNumber(
-                currentMCQOptions[i]
-            );
-
-
-        optionButton.dataset.value =
-
-            currentMCQOptions[i];
-
-
-        optionButton.addEventListener(
-
-            "click",
-
-            function () {
-
-                selectMCQAnswer(
-                    Number(
-                        this.dataset.value
-                    ),
-                    this
-                );
-
-            }
-
-        );
-
-
-        container.appendChild(
-            optionButton
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   CHECK MCQ ANSWER
-===================================================== */
-
-function selectMCQAnswer(
-    selectedAnswer,
-    selectedButton
-) {
-
-    if (
-        questionAnswered
-    ) {
-
-        return;
-
-    }
-
-
-    questionAnswered =
-        true;
-
-
-    clearInterval(
-        timerInterval
-    );
-
-
-    const correct =
-
-        answersAreEqual(
-            selectedAnswer,
-            currentAnswer
-        );
-
-
-    const allOptions =
-
-        document
-        .querySelectorAll(
-            ".mcq-option"
-        );
-
-
-    for (
-        let i = 0;
-
-        i < allOptions.length;
-
-        i++
-    ) {
-
-        allOptions[i]
-            .disabled =
-            true;
-
-
-        const optionValue =
-
-            Number(
-                allOptions[i]
-                .dataset
-                .value
-            );
-
-
-        if (
-            answersAreEqual(
-                optionValue,
-                currentAnswer
-            )
-        ) {
-
-            allOptions[i]
-                .classList
-                .add(
-                    "correct-option"
-                );
-
-        }
-
-    }
-
-
-    if (
-        correct
-    ) {
-
-        score++;
-
-        streak++;
-
-
-        if (
-            streak >
-            bestStreak
-        ) {
-
-            bestStreak =
-                streak;
-
-        }
-
-
-        selectedButton
-            .classList
-            .add(
-                "correct-option"
-            );
-
-
-        showFeedback(
-            true
-        );
-
-    }
-
-    else {
-
-        streak = 0;
-
-
-        selectedButton
-            .classList
-            .add(
-                "wrong-option"
-            );
-
-
-        showFeedback(
-            false
-        );
-
-    }
-
-
-    finishAnswer(
-        correct
-    );
-
-}
-
-
-/* =====================================================
-   CHECK DESCRIPTIVE ANSWER
-===================================================== */
-
-function checkAnswer() {
-
-    if (
-        questionAnswered
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        selectedQuestionFormat ===
-        "mcq"
-    ) {
-
-        return;
-
-    }
-
-
-    const answerText =
-
-        document
-        .getElementById(
-            "answer"
-        )
-        .value
-        .trim();
-
-
-    if (
-        answerText === ""
-    ) {
-
-        alert(
-            "Please enter an answer."
-        );
-
-        return;
-
-    }
-
-
-    questionAnswered =
-        true;
-
-
-    clearInterval(
-        timerInterval
-    );
-
-
-    const studentAnswer =
-
-        Number(
-            answerText
-        );
-
-
-    const correct =
-
-        answersAreEqual(
-            studentAnswer,
-            currentAnswer
-        );
-
-
-    if (
-        correct
-    ) {
-
-        score++;
-
-        streak++;
-
-
-        if (
-            streak >
-            bestStreak
-        ) {
-
-            bestStreak =
-                streak;
-
-        }
-
-    }
-
-    else {
-
-        streak = 0;
-
-    }
-
-
-    showFeedback(
-        correct
-    );
-
-
-    document
-        .getElementById(
-            "answer"
-        )
-        .disabled =
-        true;
-
-
-    finishAnswer(
-        correct
-    );
-
-}
-
-
-/* =====================================================
-   SHOW FEEDBACK
-===================================================== */
-
-function showFeedback(
-    correct
-) {
-
-    const feedbackBox =
-
-        document
-        .getElementById(
-            "feedback"
-        );
-
-
-    if (
-        correct
-    ) {
-
-        feedbackBox
-            .textContent =
-
-            "✅ Correct! Great work!";
-
-
-        feedbackBox
-            .className =
-
-            "feedback correct";
-
-    }
-
-    else {
-
-        feedbackBox
-            .textContent =
-
-            "❌ Not quite. The correct answer is " +
-
-            formatNumber(
-                currentAnswer
-            ) +
-
-            ".";
-
-
-        feedbackBox
-            .className =
-
-            "feedback wrong";
-
-    }
-
-}
-
-
-/* =====================================================
-   FINISH ANSWER
-===================================================== */
-
-function finishAnswer(
-    correct
-) {
-
-    quizResults.push({
-
-        correct:
-            correct,
-
-        topic:
-            selectedTopic,
-
-        wordProblem:
-            currentQuestionIsWordProblem
-
-    });
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .textContent =
-        currentExplanation;
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .classList
-        .remove("hidden");
-
-
-    updateStats();
-
-
-    setTimeout(
-        nextQuestion,
-        2500
-    );
-
-}
-
-
-/* =====================================================
-   TIMER
-===================================================== */
-
-function startTimer() {
-
-    timeLeft = 30;
-
-
-    document
-        .getElementById(
-            "timer"
-        )
-        .textContent =
-        timeLeft;
-
-
-    timerInterval =
-        setInterval(
-
-            function () {
-
-                timeLeft--;
-
-
-                document
-                    .getElementById(
-                        "timer"
-                    )
-                    .textContent =
-                    timeLeft;
-
-
-                if (
-                    timeLeft <= 0
-                ) {
-
-                    clearInterval(
-                        timerInterval
-                    );
-
-
-                    timeUp();
-
-                }
-
-            },
-
-            1000
-
-        );
-
-}
-
-
-/* =====================================================
-   TIME UP
-===================================================== */
-
-function timeUp() {
-
-    if (
-        questionAnswered
-    ) {
-
-        return;
-
-    }
-
-
-    questionAnswered =
-        true;
-
-
-    streak = 0;
-
-
-    quizResults.push({
-
-        correct:
-            false,
-
-        topic:
-            selectedTopic,
-
-        wordProblem:
-            currentQuestionIsWordProblem
-
-    });
-
-
-    const feedbackBox =
-
-        document
-        .getElementById(
-            "feedback"
-        );
-
-
-    feedbackBox
-        .textContent =
-
-        "⏰ Time is up! The correct answer is " +
-
-        formatNumber(
-            currentAnswer
-        ) +
-
-        ".";
-
-
-    feedbackBox
-        .className =
-
-        "feedback wrong";
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .textContent =
-        currentExplanation;
-
-
-    document
-        .getElementById(
-            "explanation"
-        )
-        .classList
-        .remove("hidden");
-
-
-    document
-        .getElementById(
-            "answer"
-        )
-        .disabled =
-        true;
-
-
-    const allOptions =
-
-        document
-        .querySelectorAll(
-            ".mcq-option"
-        );
-
-
-    for (
-        let i = 0;
-
-        i < allOptions.length;
-
-        i++
-    ) {
-
-        allOptions[i]
-            .disabled =
-            true;
-
-
-        if (
-            answersAreEqual(
-
-                Number(
-                    allOptions[i]
-                    .dataset
-                    .value
-                ),
-
-                currentAnswer
-
-            )
-        ) {
-
-            allOptions[i]
-                .classList
-                .add(
-                    "correct-option"
-                );
-
-        }
-
-    }
-
-
-    updateStats();
-
-
-    setTimeout(
-        nextQuestion,
-        2500
-    );
-
-}
-
-
-/* =====================================================
-   NEXT QUESTION
-===================================================== */
-
-function nextQuestion() {
-
-    currentQuestion++;
-
-
-    if (
-        currentQuestion >=
-        totalQuestions
-    ) {
+    if(currentQuestionNumber >= TOTAL_QUESTIONS){
 
         showResults();
 
@@ -1651,2510 +639,2427 @@ function nextQuestion() {
 
     }
 
+    //-------------------------------------------------
+    // SELECT TOPIC
+    //-------------------------------------------------
 
-    generateQuestion();
+    let topic = selectedTopic;
 
-}
+    if(mixedMode){
 
-
-/* =====================================================
-   HINT
-===================================================== */
-
-function showHint() {
-
-    const hintBox =
-
-        document
-        .getElementById(
-            "hint-box"
-        );
-
-
-    hintBox.textContent =
-
-        "💡 " +
-
-        currentHint;
-
-
-    hintBox
-        .classList
-        .remove("hidden");
-
-}
-
-
-/* =====================================================
-   NORMAL QUESTION ROUTER
-===================================================== */
-
-function generateNormalQuestion(
-    topic,
-    difficulty
-) {
-
-    if (
-        topic === "addition"
-    ) {
-
-        generateAddition(
-            difficulty
-        );
+        topic = getRandomTopic();
 
     }
 
-    else if (
-        topic === "subtraction"
-    ) {
+    //-------------------------------------------------
+    // SELECT DIFFICULTY
+    //-------------------------------------------------
 
-        generateSubtraction(
-            difficulty
-        );
+    let difficulty = selectedDifficulty;
 
-    }
+    if(challengeMode){
 
-    else if (
-        topic === "multiplication"
-    ) {
+        difficulty = getChallengeDifficulty();
 
-        generateMultiplication(
-            difficulty
-        );
+        challengeText.textContent =
+        difficulty.toUpperCase();
 
     }
 
-    else if (
-        topic === "division"
-    ) {
+    //-------------------------------------------------
+    // GET GENERATOR
+    //-------------------------------------------------
 
-        generateDivision(
-            difficulty
-        );
+    const generator = questionGenerators[topic];
 
-    }
+    if(!generator){
 
-    else if (
-        topic === "fractions"
-    ) {
+        alert("Generator not found for " + topic);
 
-        generateFractions(
-            difficulty
-        );
+        return;
 
     }
 
-    else if (
-        topic === "decimals"
-    ) {
+    //-------------------------------------------------
+    // GENERATE QUESTION
+    //-------------------------------------------------
 
-        generateDecimals(
-            difficulty
-        );
+    currentQuestion = generator(difficulty);
 
-    }
+    //-------------------------------------------------
+    // AVOID DUPLICATES
+    //-------------------------------------------------
 
-    else if (
-        topic === "percentages"
-    ) {
+    let attempts = 0;
 
-        generatePercentages(
-            difficulty
-        );
+    while(
 
-    }
+        askedQuestions.includes(currentQuestion.question)
 
-    else if (
-        topic === "ratio"
-    ) {
+        &&
 
-        generateRatio(
-            difficulty
-        );
+        attempts < 50
+
+    ){
+
+        currentQuestion = generator(difficulty);
+
+        attempts++;
 
     }
 
-    else if (
-        topic === "factors"
-    ) {
+    askedQuestions.push(
 
-        generateFactors(
-            difficulty
-        );
+        currentQuestion.question
 
-    }
-
-}
-
-
-/* =====================================================
-   ADDITION
-===================================================== */
-
-function generateAddition(
-    difficulty
-) {
-
-    let a;
-
-    let b;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        a =
-            randomNumber(
-                100,
-                999
-            );
-
-
-        b =
-            randomNumber(
-                100,
-                999
-            );
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        a =
-            randomNumber(
-                1000,
-                9999
-            );
-
-
-        b =
-            randomNumber(
-                1000,
-                9999
-            );
-
-    }
-
-    else {
-
-        a =
-            randomNumber(
-                10000,
-                99999
-            );
-
-
-        b =
-            randomNumber(
-                10000,
-                99999
-            );
-
-    }
-
-
-    currentAnswer =
-        a + b;
-
-
-    currentQuestionText =
-
-        a +
-
-        " + " +
-
-        b +
-
-        " = ?";
-
-
-    currentHint =
-
-        "Add the numbers column by column.";
-
-
-    currentExplanation =
-
-        a +
-
-        " + " +
-
-        b +
-
-        " = " +
-
-        currentAnswer;
-
-}
-
-
-/* =====================================================
-   SUBTRACTION
-===================================================== */
-
-function generateSubtraction(
-    difficulty
-) {
-
-    let a;
-
-    let b;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        a =
-            randomNumber(
-                500,
-                2000
-            );
-
-
-        b =
-            randomNumber(
-                100,
-                a - 1
-            );
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        a =
-            randomNumber(
-                5000,
-                20000
-            );
-
-
-        b =
-            randomNumber(
-                1000,
-                a - 1
-            );
-
-    }
-
-    else {
-
-        a =
-            randomNumber(
-                50000,
-                200000
-            );
-
-
-        b =
-            randomNumber(
-                10000,
-                a - 1
-            );
-
-    }
-
-
-    currentAnswer =
-        a - b;
-
-
-    currentQuestionText =
-
-        a +
-
-        " − " +
-
-        b +
-
-        " = ?";
-
-
-    currentHint =
-
-        "Subtract from right to left and borrow when needed.";
-
-
-    currentExplanation =
-
-        a +
-
-        " − " +
-
-        b +
-
-        " = " +
-
-        currentAnswer;
-
-}
-
-
-/* =====================================================
-   MULTIPLICATION
-===================================================== */
-
-function generateMultiplication(
-    difficulty
-) {
-
-    let a;
-
-    let b;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        a =
-            randomNumber(
-                12,
-                99
-            );
-
-
-        b =
-            randomNumber(
-                2,
-                12
-            );
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        a =
-            randomNumber(
-                100,
-                999
-            );
-
-
-        b =
-            randomNumber(
-                12,
-                99
-            );
-
-    }
-
-    else {
-
-        a =
-            randomNumber(
-                1000,
-                9999
-            );
-
-
-        b =
-            randomNumber(
-                100,
-                999
-            );
-
-    }
-
-
-    currentAnswer =
-        a * b;
-
-
-    currentQuestionText =
-
-        a +
-
-        " × " +
-
-        b +
-
-        " = ?";
-
-
-    currentHint =
-
-        "Break one number into hundreds, tens and ones.";
-
-
-    currentExplanation =
-
-        a +
-
-        " × " +
-
-        b +
-
-        " = " +
-
-        currentAnswer;
-
-}
-
-
-/* =====================================================
-   DIVISION
-===================================================== */
-
-function generateDivision(
-    difficulty
-) {
-
-    let divisor;
-
-    let answer;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        divisor =
-            randomNumber(
-                2,
-                12
-            );
-
-
-        answer =
-            randomNumber(
-                10,
-                99
-            );
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        divisor =
-            randomNumber(
-                12,
-                50
-            );
-
-
-        answer =
-            randomNumber(
-                20,
-                200
-            );
-
-    }
-
-    else {
-
-        divisor =
-            randomNumber(
-                25,
-                150
-            );
-
-
-        answer =
-            randomNumber(
-                100,
-                500
-            );
-
-    }
-
-
-    const dividend =
-
-        divisor *
-        answer;
-
-
-    currentAnswer =
-        answer;
-
-
-    currentQuestionText =
-
-        dividend +
-
-        " ÷ " +
-
-        divisor +
-
-        " = ?";
-
-
-    currentHint =
-
-        "Think: divisor × answer = dividend.";
-
-
-    currentExplanation =
-
-        dividend +
-
-        " ÷ " +
-
-        divisor +
-
-        " = " +
-
-        answer;
-
-}
-
-
-/* =====================================================
-   FRACTIONS
-===================================================== */
-
-function generateFractions(
-    difficulty
-) {
-
-    let denominator;
-
-    let numerator1;
-
-    let numerator2;
-
-
-    denominator =
-
-        randomNumber(
-            2,
-            difficulty === "easy"
-                ? 8
-                : 15
-        );
-
-
-    numerator1 =
-
-        randomNumber(
-            1,
-            denominator - 1
-        );
-
-
-    numerator2 =
-
-        randomNumber(
-            1,
-            denominator - 1
-        );
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        const numerator =
-
-            numerator1 +
-            numerator2;
-
-
-        currentAnswer =
-
-            numerator /
-            denominator;
-
-
-        currentQuestionText =
-
-            numerator1 +
-
-            "/" +
-
-            denominator +
-
-            " + " +
-
-            numerator2 +
-
-            "/" +
-
-            denominator +
-
-            " = ?";
-
-
-        currentHint =
-
-            "The denominators are the same, so add the numerators.";
-
-
-        currentExplanation =
-
-            numerator1 +
-
-            "/" +
-
-            denominator +
-
-            " + " +
-
-            numerator2 +
-
-            "/" +
-
-            denominator +
-
-            " = " +
-
-            numerator +
-
-            "/" +
-
-            denominator;
-
-    }
-
-    else {
-
-        const numerator =
-
-            numerator1 -
-            numerator2;
-
-
-        currentAnswer =
-
-            numerator /
-            denominator;
-
-
-        currentQuestionText =
-
-            numerator1 +
-
-            "/" +
-
-            denominator +
-
-            " − " +
-
-            numerator2 +
-
-            "/" +
-
-            denominator +
-
-            " = ?";
-
-
-        currentHint =
-
-            "The denominators are the same, so subtract the numerators.";
-
-
-        currentExplanation =
-
-            numerator1 +
-
-            "/" +
-
-            denominator +
-
-            " − " +
-
-            numerator2 +
-
-            "/" +
-
-            denominator +
-
-            " = " +
-
-            numerator +
-
-            "/" +
-
-            denominator;
-
-    }
-
-}
-
-
-/* =====================================================
-   DECIMALS
-===================================================== */
-
-function generateDecimals(
-    difficulty
-) {
-
-    let a;
-
-    let b;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        a =
-            randomNumber(
-                10,
-                99
-            ) / 10;
-
-
-        b =
-            randomNumber(
-                10,
-                99
-            ) / 10;
-
-
-        currentAnswer =
-
-            Number(
-                (
-                    a + b
-                )
-                .toFixed(2)
-            );
-
-
-        currentQuestionText =
-
-            formatNumber(a) +
-
-            " + " +
-
-            formatNumber(b) +
-
-            " = ?";
-
-
-        currentHint =
-
-            "Line up the decimal points before adding.";
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        a =
-            randomNumber(
-                100,
-                999
-            ) / 10;
-
-
-        b =
-            randomNumber(
-                10,
-                500
-            ) / 10;
-
-
-        currentAnswer =
-
-            Number(
-                (
-                    a - b
-                )
-                .toFixed(2)
-            );
-
-
-        currentQuestionText =
-
-            formatNumber(a) +
-
-            " − " +
-
-            formatNumber(b) +
-
-            " = ?";
-
-
-        currentHint =
-
-            "Line up the decimal points before subtracting.";
-
-    }
-
-    else {
-
-        const divisor =
-
-            randomNumber(
-                2,
-                12
-            );
-
-
-        const answer =
-
-            randomNumber(
-                10,
-                300
-            ) / 10;
-
-
-        const dividend =
-
-            Number(
-                (
-                    divisor *
-                    answer
-                )
-                .toFixed(2)
-            );
-
-
-        currentAnswer =
-            answer;
-
-
-        currentQuestionText =
-
-            formatNumber(
-                dividend
-            ) +
-
-            " ÷ " +
-
-            divisor +
-
-            " = ?";
-
-
-        currentHint =
-
-            "Divide normally and place the decimal carefully.";
-
-    }
-
-
-    currentExplanation =
-
-        "The correct answer is " +
-
-        formatNumber(
-            currentAnswer
-        ) +
-
-        ".";
-
-}
-
-
-/* =====================================================
-   PERCENTAGES
-===================================================== */
-
-function generatePercentages(
-    difficulty
-) {
-
-    let percentage;
-
-    let number;
-
-
-    if (
-        difficulty === "easy"
-    ) {
-
-        const percentages =
-
-            [
-                10,
-                20,
-                25,
-                50
-            ];
-
-
-        percentage =
-
-            percentages[
-                randomNumber(
-                    0,
-                    percentages.length - 1
-                )
-            ];
-
-
-        number =
-
-            randomNumber(
-                2,
-                20
-            ) * 100;
-
-    }
-
-    else if (
-        difficulty === "medium"
-    ) {
-
-        const percentages =
-
-            [
-                5,
-                10,
-                15,
-                20,
-                25,
-                30,
-                40
-            ];
-
-
-        percentage =
-
-            percentages[
-                randomNumber(
-                    0,
-                    percentages.length - 1
-                )
-            ];
-
-
-        number =
-
-            randomNumber(
-                20,
-                100
-            ) * 20;
-
-    }
-
-    else {
-
-        percentage =
-
-            randomNumber(
-                5,
-                75
-            );
-
-
-        number =
-
-            randomNumber(
-                100,
-                1000
-            );
-
-    }
-
-
-    currentAnswer =
-
-        Number(
-            (
-                percentage /
-                100 *
-                number
-            )
-            .toFixed(2)
-        );
-
-
-    currentQuestionText =
-
-        percentage +
-
-        "% of " +
-
-        number +
-
-        " = ?";
-
-
-    currentHint =
-
-        percentage +
-
-        "% means " +
-
-        percentage +
-
-        "/100.";
-
-
-    currentExplanation =
-
-        percentage +
-
-        "/100 × " +
-
-        number +
-
-        " = " +
-
-        formatNumber(
-            currentAnswer
-        );
-
-}
-
-
-/* =====================================================
-   RATIO AND PROPORTION
-===================================================== */
-
-function generateRatio(
-    difficulty
-) {
-
-    const first =
-
-        randomNumber(
-            1,
-            difficulty === "easy"
-                ? 5
-                : 12
-        );
-
-
-    const second =
-
-        randomNumber(
-            1,
-            difficulty === "easy"
-                ? 8
-                : 15
-        );
-
-
-    const multiplier =
-
-        randomNumber(
-            difficulty === "easy"
-                ? 2
-                : 5,
-
-            difficulty === "easy"
-                ? 10
-                : 20
-        );
-
-
-    const total =
-
-        (
-            first +
-            second
-        ) *
-        multiplier;
-
-
-    currentAnswer =
-
-        second *
-        multiplier;
-
-
-    currentQuestionText =
-
-        "The ratio of boys to girls is " +
-
-        first +
-
-        ":" +
-
-        second +
-
-        ". If there are " +
-
-        total +
-
-        " students, how many are girls?";
-
-
-    currentHint =
-
-        "Add the ratio parts, then find the value of one part.";
-
-
-    currentExplanation =
-
-        "Total parts = " +
-
-        first +
-
-        " + " +
-
-        second +
-
-        " = " +
-
-        (
-            first +
-            second
-        ) +
-
-        "\n\nOne part = " +
-
-        total +
-
-        " ÷ " +
-
-        (
-            first +
-            second
-        ) +
-
-        " = " +
-
-        multiplier +
-
-        "\n\nGirls = " +
-
-        second +
-
-        " × " +
-
-        multiplier +
-
-        " = " +
-
-        currentAnswer;
-
-}
-
-
-/* =====================================================
-   FACTORS AND MULTIPLES
-===================================================== */
-
-function generateFactors(
-    difficulty
-) {
-
-    const type =
-
-        randomNumber(
-            1,
-            2
-        );
-
-
-    if (
-        type === 1
-    ) {
-
-        const a =
-
-            randomNumber(
-                2,
-                difficulty === "easy"
-                    ? 12
-                    : 30
-            );
-
-
-        const b =
-
-            randomNumber(
-                2,
-                difficulty === "easy"
-                    ? 12
-                    : 30
-            );
-
-
-        currentAnswer =
-
-            (
-                a *
-                b
-            );
-
-
-        currentQuestionText =
-
-            "What is the least common multiple (LCM) of " +
-
-            a +
-
-            " and " +
-
-            b +
-
-            "?";
-
-
-        currentHint =
-
-            "List multiples of both numbers and find the first common one.";
-
-
-        currentExplanation =
-
-            "The LCM is " +
-
-            currentAnswer +
-
-            ".";
-
-    }
-
-    else {
-
-        const common =
-
-            randomNumber(
-                2,
-                10
-            );
-
-
-        const a =
-
-            randomNumber(
-                2,
-                difficulty === "easy"
-                    ? 10
-                    : 20
-            ) *
-            common;
-
-
-        const b =
-
-            randomNumber(
-                2,
-                difficulty === "easy"
-                    ? 10
-                    : 20
-            ) *
-            common;
-
-
-        currentAnswer =
-            common;
-
-
-        currentQuestionText =
-
-            "What is the highest common factor (HCF) of " +
-
-            a +
-
-            " and " +
-
-            b +
-
-            "?";
-
-
-        currentHint =
-
-            "Find the greatest number that divides both numbers.";
-
-
-        currentExplanation =
-
-            "The HCF is " +
-
-            currentAnswer +
-
-            ".";
-
-    }
-
-}
-
-
-/* =====================================================
-   WORD PROBLEMS
-===================================================== */
-
-function generateWordProblem(
-    topic,
-    difficulty
-) {
-
-    currentQuestionIsWordProblem =
-        true;
-
-
-    if (
-        topic === "addition"
-    ) {
-
-        const a =
-
-            randomNumber(
-                500,
-                difficulty === "easy"
-                    ? 2000
-                    : 10000
-            );
-
-
-        const b =
-
-            randomNumber(
-                500,
-                difficulty === "easy"
-                    ? 2000
-                    : 10000
-            );
-
-
-        currentAnswer =
-            a + b;
-
-
-        currentQuestionText =
-
-            "A library bought " +
-
-            a +
-
-            " books in January and " +
-
-            b +
-
-            " books in February. How many books did it buy altogether?";
-
-
-        currentHint =
-
-            "The word 'altogether' means add.";
-
-
-        currentExplanation =
-
-            a +
-
-            " + " +
-
-            b +
-
-            " = " +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "subtraction"
-    ) {
-
-        const total =
-
-            randomNumber(
-                5000,
-                20000
-            );
-
-
-        const used =
-
-            randomNumber(
-                1000,
-                total - 100
-            );
-
-
-        currentAnswer =
-
-            total -
-            used;
-
-
-        currentQuestionText =
-
-            "A stadium has " +
-
-            total +
-
-            " seats. If " +
-
-            used +
-
-            " seats are occupied, how many seats are empty?";
-
-
-        currentHint =
-
-            "Find what remains by subtracting.";
-
-
-        currentExplanation =
-
-            total +
-
-            " − " +
-
-            used +
-
-            " = " +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "multiplication"
-    ) {
-
-        const boxes =
-
-            randomNumber(
-                20,
-                100
-            );
-
-
-        const items =
-
-            randomNumber(
-                10,
-                50
-            );
-
-
-        currentAnswer =
-
-            boxes *
-            items;
-
-
-        currentQuestionText =
-
-            "A factory packs " +
-
-            boxes +
-
-            " boxes. Each box contains " +
-
-            items +
-
-            " toys. How many toys are packed altogether?";
-
-
-        currentHint =
-
-            "Multiply the number of boxes by the toys in each box.";
-
-
-        currentExplanation =
-
-            boxes +
-
-            " × " +
-
-            items +
-
-            " = " +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "division"
-    ) {
-
-        const students =
-
-            randomNumber(
-                20,
-                80
-            );
-
-
-        const classes =
-
-            randomNumber(
-                2,
-                10
-            );
-
-
-        const total =
-
-            students *
-            classes;
-
-
-        currentAnswer =
-            students;
-
-
-        currentQuestionText =
-
-            "A school has " +
-
-            total +
-
-            " students divided equally into " +
-
-            classes +
-
-            " classes. How many students are in each class?";
-
-
-        currentHint =
-
-            "Divide the total students by the number of classes.";
-
-
-        currentExplanation =
-
-            total +
-
-            " ÷ " +
-
-            classes +
-
-            " = " +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "fractions"
-    ) {
-
-        const denominator =
-
-            randomNumber(
-                4,
-                12
-            );
-
-
-        const numerator =
-
-            randomNumber(
-                1,
-                denominator - 2
-            );
-
-
-        const total =
-
-            randomNumber(
-                10,
-                50
-            ) *
-            denominator;
-
-
-        currentAnswer =
-
-            (
-                numerator /
-                denominator
-            ) *
-            total;
-
-
-        currentQuestionText =
-
-            "A water tank is " +
-
-            numerator +
-
-            "/" +
-
-            denominator +
-
-            " full. Its capacity is " +
-
-            total +
-
-            " litres. How many litres of water are in the tank?";
-
-
-        currentHint =
-
-            "Multiply the total capacity by the fraction.";
-
-
-        currentExplanation =
-
-            numerator +
-
-            "/" +
-
-            denominator +
-
-            " × " +
-
-            total +
-
-            " = " +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "decimals"
-    ) {
-
-        const bought =
-
-            randomNumber(
-                100,
-                300
-            ) / 10;
-
-
-        const sold =
-
-            randomNumber(
-                10,
-                Math.floor(
-                    bought * 10
-                ) - 1
-            ) / 10;
-
-
-        currentAnswer =
-
-            Number(
-                (
-                    bought -
-                    sold
-                )
-                .toFixed(2)
-            );
-
-
-        currentQuestionText =
-
-            "A shopkeeper bought " +
-
-            formatNumber(
-                bought
-            ) +
-
-            " kg of apples and sold " +
-
-            formatNumber(
-                sold
-            ) +
-
-            " kg. How many kilograms remain?";
-
-
-        currentHint =
-
-            "Subtract the amount sold from the amount bought.";
-
-
-        currentExplanation =
-
-            formatNumber(
-                bought
-            ) +
-
-            " − " +
-
-            formatNumber(
-                sold
-            ) +
-
-            " = " +
-
-            formatNumber(
-                currentAnswer
-            );
-
-    }
-
-    else if (
-        topic === "percentages"
-    ) {
-
-        const price =
-
-            randomNumber(
-                20,
-                100
-            ) * 100;
-
-
-        const discount =
-
-            [
-                10,
-                15,
-                20,
-                25
-            ][
-                randomNumber(
-                    0,
-                    3
-                )
-            ];
-
-
-        const discountAmount =
-
-            (
-                discount /
-                100
-            ) *
-            price;
-
-
-        currentAnswer =
-
-            price -
-            discountAmount;
-
-
-        currentQuestionText =
-
-            "A bicycle costs $" +
-
-            price +
-
-            ". A shop gives a " +
-
-            discount +
-
-            "% discount. What is the sale price?";
-
-
-        currentHint =
-
-            "First find the discount amount, then subtract it from the original price.";
-
-
-        currentExplanation =
-
-            "Discount = " +
-
-            discount +
-
-            "% of $" +
-
-            price +
-
-            " = $" +
-
-            discountAmount +
-
-            "\n\nSale price = $" +
-
-            price +
-
-            " − $" +
-
-            discountAmount +
-
-            " = $" +
-
-            currentAnswer;
-
-    }
-
-    else if (
-        topic === "ratio"
-    ) {
-
-        generateRatio(
-            difficulty
-        );
-
-    }
-
-    else {
-
-        const common =
-
-            randomNumber(
-                2,
-                12
-            );
-
-
-        const first =
-
-            randomNumber(
-                2,
-                10
-            ) *
-            common;
-
-
-        const second =
-
-            randomNumber(
-                2,
-                10
-            ) *
-            common;
-
-
-        currentAnswer =
-            common;
-
-
-        currentQuestionText =
-
-            "Two bells ring every " +
-
-            first +
-
-            " seconds and " +
-
-            second +
-
-            " seconds. What is the HCF of the two time intervals?";
-
-
-        currentHint =
-
-            "Find the greatest number that divides both time intervals.";
-
-
-        currentExplanation =
-
-            "The HCF is " +
-
-            currentAnswer;
-
-    }
-
-}
-
-
-/* =====================================================
-   RESULTS
-===================================================== */
-
-function showResults() {
-
-    clearInterval(
-        timerInterval
     );
 
+    //-------------------------------------------------
+    // UPDATE DASHBOARD
+    //-------------------------------------------------
 
-    document
-        .getElementById(
-            "quiz-screen"
-        )
-        .classList
-        .add("hidden");
+    updateDashboard();
 
+    //-------------------------------------------------
+    // DISPLAY QUESTION
+    //-------------------------------------------------
 
-    document
-        .getElementById(
-            "result-screen"
-        )
-        .classList
-        .remove("hidden");
+    displayQuestion();
 
+    //-------------------------------------------------
+    // TIMER
+    //-------------------------------------------------
 
-    document
-        .getElementById(
-            "final-score"
-        )
-        .textContent =
-        score;
+    if(timerEnabled){
 
-
-    document
-        .getElementById(
-            "final-total"
-        )
-        .textContent =
-        totalQuestions;
-
-
-    const percentage =
-
-        Math.round(
-
-            (
-                score /
-                totalQuestions
-            ) * 100
-
-        );
-
-
-    document
-        .getElementById(
-            "final-percentage"
-        )
-        .textContent =
-
-        percentage +
-
-        "%";
-
-
-    let feedback = "";
-
-
-    if (
-        percentage === 100
-    ) {
-
-        feedback =
-
-            studentName +
-
-            ", outstanding! You answered every question correctly.";
+        startTimer();
 
     }
-
-    else if (
-        percentage >= 90
-    ) {
-
-        feedback =
-
-            "Excellent work, " +
-
-            studentName +
-
-            "! You have a very strong understanding of this level.";
-
-    }
-
-    else if (
-        percentage >= 75
-    ) {
-
-        feedback =
-
-            "Great work, " +
-
-            studentName +
-
-            "! You understand most of the concepts.";
-
-    }
-
-    else if (
-        percentage >= 50
-    ) {
-
-        feedback =
-
-            "Good effort, " +
-
-            studentName +
-
-            "! Regular practice will help you become more confident.";
-
-    }
-
-    else {
-
-        feedback =
-
-            studentName +
-
-            ", keep practising. Work slowly and use the hints to understand the method.";
-
-    }
-
-
-    document
-        .getElementById(
-            "personal-feedback-text"
-        )
-        .textContent =
-        feedback;
-
-
-    if (
-        percentage >= 75
-    ) {
-
-        document
-            .getElementById(
-                "strength-text"
-            )
-            .textContent =
-
-            "You showed strong understanding and solved many questions correctly.";
-
-
-        document
-            .getElementById(
-                "practice-text"
-            )
-            .textContent =
-
-            "Try a harder level or Challenge Mode next.";
-
-    }
-
-    else {
-
-        document
-            .getElementById(
-                "strength-text"
-            )
-            .textContent =
-
-            "You completed all 20 questions. Your effort and consistency are important strengths.";
-
-
-        document
-            .getElementById(
-                "practice-text"
-            )
-            .textContent =
-
-            "Practise the selected topic again and solve each question step by step.";
-
-    }
-
-
-    showBadges(
-        percentage
-    );
 
 }
+//=====================================================
+// PART 3B
+// DISPLAY QUESTION
+//=====================================================
 
+//=====================================================
+// DISPLAY QUESTION
+//=====================================================
 
-/* =====================================================
-   BADGES
-===================================================== */
+function displayQuestion(){
 
-function showBadges(
-    percentage
-) {
+    //-------------------------------------------------
+    // QUESTION NUMBER
+    //-------------------------------------------------
 
-    const container =
+    questionNumberElement.textContent =
+    currentQuestionNumber + 1;
 
-        document
-        .getElementById(
-            "badges-container"
-        );
+    //-------------------------------------------------
+    // QUESTION TEXT
+    //-------------------------------------------------
 
+    questionElement.textContent =
+    currentQuestion.question;
 
-    container.innerHTML =
-        "";
+    //-------------------------------------------------
+    // QUESTION TYPE
+    //-------------------------------------------------
 
+    const typeBox =
+    document.getElementById("question-type");
 
-    const badges = [];
+    if(typeBox){
 
+        let label = "";
 
-    badges.push({
+        if(currentQuestion.type==="word"){
 
-        icon:
-            "🌱",
-
-        name:
-            "Rising Star",
-
-        description:
-            "Completed a full quiz"
-
-    });
-
-
-    if (
-        percentage >= 70
-    ) {
-
-        badges.push({
-
-            icon:
-                "⭐",
-
-            name:
-                "Maths Star",
-
-            description:
-                "Scored 70% or more"
-
-        });
-
-    }
-
-
-    if (
-        percentage >= 90
-    ) {
-
-        badges.push({
-
-            icon:
-                "🏆",
-
-            name:
-                "Maths Champion",
-
-            description:
-                "Scored 90% or more"
-
-        });
-
-    }
-
-
-    if (
-        score ===
-        totalQuestions
-    ) {
-
-        badges.push({
-
-            icon:
-                "💯",
-
-            name:
-                "Perfect Score",
-
-            description:
-                "Answered every question correctly"
-
-        });
-
-    }
-
-
-    if (
-        bestStreak >= 10
-    ) {
-
-        badges.push({
-
-            icon:
-                "🔥",
-
-            name:
-                "Streak Master",
-
-            description:
-                "Got 10 correct answers in a row"
-
-        });
-
-    }
-
-
-    if (
-        timerEnabled &&
-        percentage >= 80
-    ) {
-
-        badges.push({
-
-            icon:
-                "⚡",
-
-            name:
-                "Speed Solver",
-
-            description:
-                "Scored 80% or more with the timer"
-
-        });
-
-    }
-
-
-    if (
-        selectedTopic ===
-        "challenge" &&
-
-        percentage >= 70
-    ) {
-
-        badges.push({
-
-            icon:
-                "🚀",
-
-            name:
-                "Challenge Hero",
-
-            description:
-                "Completed Challenge Mode with 70% or more"
-
-        });
-
-    }
-
-
-    let wordCorrect = 0;
-
-
-    for (
-        let i = 0;
-
-        i < quizResults.length;
-
-        i++
-    ) {
-
-        if (
-
-            quizResults[i]
-            .wordProblem &&
-
-            quizResults[i]
-            .correct
-
-        ) {
-
-            wordCorrect++;
+            label = "📖 Word Problem";
 
         }
 
-    }
+        else{
 
+            label = "🧮 Direct Question";
 
-    if (
-        wordCorrect >= 4
-    ) {
+        }
 
-        badges.push({
+        label +=
+        " • " +
+        currentQuestion.difficulty.toUpperCase();
 
-            icon:
-                "🧠",
-
-            name:
-                "Problem Solver",
-
-            description:
-                "Solved at least 4 word problems"
-
-        });
+        typeBox.textContent = label;
 
     }
 
+    //-------------------------------------------------
+    // CLEAR PREVIOUS
+    //-------------------------------------------------
 
-    for (
-        let i = 0;
+    feedbackElement.innerHTML = "";
 
-        i < badges.length;
+    explanationElement.innerHTML = "";
 
-        i++
-    ) {
+    explanationElement.classList.add("hidden");
 
-        const badge =
+    hintBox.innerHTML = "";
 
-            document
-            .createElement(
-                "div"
-            );
+    hintBox.classList.add("hidden");
 
+    mcqOptions.innerHTML = "";
 
-        badge.className =
-            "badge";
+    answerInput.value = "";
 
+    //-------------------------------------------------
+    // MCQ MODE
+    //-------------------------------------------------
 
-        badge.innerHTML =
+    if(questionFormat==="mcq"){
 
-            `
-            <div class="badge-icon">
-                ${badges[i].icon}
-            </div>
+        descriptiveArea.classList.add("hidden");
 
-            <div class="badge-name">
-                ${badges[i].name}
-            </div>
+        mcqArea.classList.remove("hidden");
 
-            <div class="badge-description">
-                ${badges[i].description}
-            </div>
-            `;
+        renderMCQ();
 
+    }
 
-        container.appendChild(
-            badge
-        );
+    //-------------------------------------------------
+    // DESCRIPTIVE MODE
+    //-------------------------------------------------
+
+    else{
+
+        mcqArea.classList.add("hidden");
+
+        descriptiveArea.classList.remove("hidden");
+
+        answerInput.focus();
 
     }
 
 }
 
+//=====================================================
+// RENDER MCQ
+//=====================================================
 
-/* =====================================================
-   RESTART
-===================================================== */
+function renderMCQ(){
 
-function restartQuiz() {
+    if(!currentQuestion.options){
 
-    clearInterval(
-        timerInterval
-    );
+        currentQuestion.options = [
 
+            currentQuestion.answer,
 
-    document
-        .getElementById(
-            "result-screen"
-        )
-        .classList
-        .add("hidden");
+            currentQuestion.answer + 1,
 
+            currentQuestion.answer - 1,
 
-    document
-        .getElementById(
-            "welcome-screen"
-        )
-        .classList
-        .remove("hidden");
+            currentQuestion.answer + 2
 
+        ];
 
-    window.scrollTo(
-        0,
-        0
-    );
+    }
 
-}
+    currentQuestion.options.forEach(option=>{
 
+        const button =
+        document.createElement("button");
 
-/* =====================================================
-   BACK TO HOME
-===================================================== */
+        button.className = "mcq-option";
 
-function goBackHome() {
+        button.textContent = option;
 
-    clearInterval(
-        timerInterval
-    );
+        button.onclick = ()=>{
 
+            if(answered){
 
-    document
-        .getElementById(
-            "quiz-screen"
-        )
-        .classList
-        .add("hidden");
+                return;
 
+            }
 
-    document
-        .getElementById(
-            "result-screen"
-        )
-        .classList
-        .add("hidden");
-
-
-    document
-        .getElementById(
-            "welcome-screen"
-        )
-        .classList
-        .remove("hidden");
-
-
-    window.scrollTo(
-        0,
-        0
-    );
-
-}
-
-
-/* =====================================================
-   ENTER KEY
-===================================================== */
-
-document
-.getElementById(
-    "answer"
-)
-.addEventListener(
-
-    "keydown",
-
-    function (
-        event
-    ) {
-
-        if (
-            event.key ===
-            "Enter"
-        ) {
+            answerInput.value = option;
 
             checkAnswer();
 
+        };
+
+        mcqOptions.appendChild(button);
+
+    });
+
+}
+
+//=====================================================
+// HIGHLIGHT SELECTED MCQ
+//=====================================================
+
+function highlightCorrectAnswer(){
+
+    const buttons =
+    mcqOptions.querySelectorAll("button");
+
+    buttons.forEach(button=>{
+
+        if(
+
+            String(button.textContent)===
+
+            String(currentQuestion.answer)
+
+        ){
+
+            button.classList.add("correct");
+
+        }
+
+    });
+
+}
+
+//=====================================================
+// DISABLE MCQs
+//=====================================================
+
+function disableMCQButtons(){
+
+    const buttons =
+    mcqOptions.querySelectorAll("button");
+
+    buttons.forEach(button=>{
+
+        button.disabled = true;
+
+    });
+
+}
+
+//=====================================================
+// ENABLE MCQs
+//=====================================================
+
+function enableMCQButtons(){
+
+    const buttons =
+    mcqOptions.querySelectorAll("button");
+
+    buttons.forEach(button=>{
+
+        button.disabled = false;
+
+    });
+
+}
+
+//=====================================================
+// NEXT QUESTION
+//=====================================================
+
+function nextQuestion(){
+
+    stopTimer();
+
+    currentQuestionNumber++;
+
+    loadQuestion();
+
+}
+
+//=====================================================
+// ENTER KEY SUPPORT
+//=====================================================
+
+answerInput.addEventListener("keydown",function(e){
+
+    if(e.key==="Enter"){
+
+        if(answered){
+
+            return;
+
+        }
+
+        checkAnswer();
+
+    }
+
+});
+
+//=====================================================
+// END PART 3B
+//=====================================================
+//=====================================================
+// PART 4A
+// CHECK ANSWER & UPDATE SCORE
+//=====================================================
+
+function checkAnswer(timeUp = false){
+
+    if(answered){
+
+        return;
+
+    }
+
+    answered = true;
+
+    stopTimer();
+
+    let userAnswer;
+
+    if(timeUp){
+
+        userAnswer = "__TIME_UP__";
+
+    }
+
+    else{
+
+        userAnswer = answerInput.value.trim();
+
+        if(questionFormat==="mcq"){
+
+            disableMCQButtons();
+
         }
 
     }
 
-);
+    const correctAnswer = String(currentQuestion.answer).trim();
 
+    const isCorrect =
+        String(userAnswer).toLowerCase() ===
+        correctAnswer.toLowerCase();
 
-/* =====================================================
-   CHALLENGE MODE DROPDOWN
-===================================================== */
+    //-------------------------------------------------
+    // CORRECT ANSWER
+    //-------------------------------------------------
 
-document
-.getElementById(
-    "topic"
-)
-.addEventListener(
+    if(isCorrect){
 
-    "change",
+        score++;
 
-    function () {
+        streak++;
 
-        const challengeInfo =
+        xp += XP_PER_CORRECT;
 
-            document
-            .getElementById(
-                "challenge-info"
-            );
+        if(streak > bestStreak){
 
-
-        const difficultySelect =
-
-            document
-            .getElementById(
-                "difficulty"
-            );
-
-
-        if (
-            this.value ===
-            "challenge"
-        ) {
-
-            challengeInfo
-                .classList
-                .remove("hidden");
-
-
-            difficultySelect.value =
-                "";
-
-
-            difficultySelect.disabled =
-                true;
+            bestStreak = streak;
 
         }
 
-        else {
+        level = Math.floor(xp / 100) + 1;
 
-            challengeInfo
-                .classList
-                .add("hidden");
+        feedbackElement.innerHTML =
+        "<div class='correct-feedback'>✅ Correct!</div>";
 
+        feedbackElement.classList.remove("shake");
 
-            difficultySelect.disabled =
-                false;
+        feedbackElement.classList.add("pulse");
+
+    }
+
+    //-------------------------------------------------
+    // WRONG ANSWER
+    //-------------------------------------------------
+
+    else{
+
+        streak = 0;
+
+        feedbackElement.innerHTML =
+        `<div class="wrong-feedback">
+        ❌ Incorrect.<br>
+        Correct Answer: <strong>${currentQuestion.answer}</strong>
+        </div>`;
+
+        feedbackElement.classList.remove("pulse");
+
+        feedbackElement.classList.add("shake");
+
+        if(questionFormat==="mcq"){
+
+            highlightCorrectAnswer();
 
         }
 
     }
 
-);
+    //-------------------------------------------------
+    // UPDATE DASHBOARD
+    //-------------------------------------------------
+
+    updateDashboard();
+
+    //-------------------------------------------------
+    // SHOW EXPLANATION
+    //-------------------------------------------------
+
+    showExplanation();
+
+    //-------------------------------------------------
+    // NEXT QUESTION AFTER 2.5 SECONDS
+    //-------------------------------------------------
+
+    setTimeout(()=>{
+
+        currentQuestionNumber++;
+
+        loadQuestion();
+
+    },2500);
+
+}
+
+//=====================================================
+// SHOW EXPLANATION
+//=====================================================
+
+function showExplanation(){
+
+    explanationElement.classList.remove("hidden");
+
+    if(currentQuestion.explanation){
+
+        explanationElement.innerHTML =
+
+        `<h3>Explanation</h3>
+         <p>${currentQuestion.explanation}</p>`;
+
+    }
+
+    else{
+
+        explanationElement.innerHTML =
+
+        `<h3>Explanation</h3>
+         <p>No explanation available.</p>`;
+
+    }
+
+}
+
+//=====================================================
+// SHOW HINT
+//=====================================================
+
+function showHint(){
+
+    hintBox.classList.remove("hidden");
+
+    if(currentQuestion.hint){
+
+        hintBox.innerHTML =
+
+        `<strong>Hint:</strong><br>
+        ${currentQuestion.hint}`;
+
+    }
+
+    else{
+
+        hintBox.innerHTML =
+
+        "💡 Try solving step by step.";
+
+    }
+
+}
+
+//=====================================================
+// UPDATE SCORE DISPLAY
+//=====================================================
+
+function updateDashboard(){
+
+    scoreElement.textContent = score;
+
+    streakElement.textContent = streak;
+
+    bestStreakElement.textContent = bestStreak;
+
+    questionNumberElement.textContent =
+    currentQuestionNumber + 1;
+
+    progressFill.style.width =
+    ((currentQuestionNumber) /
+    TOTAL_QUESTIONS) * 100 + "%";
+
+}
+//=====================================================
+// PART 4B
+// RESULT SCREEN
+//=====================================================
+
+function showResults(){
+
+    stopTimer();
+
+    quizFinished = true;
+
+    quizScreen.classList.add("hidden");
+
+    resultScreen.classList.remove("hidden");
+
+    //--------------------------------------------------
+    // SCORE
+    //--------------------------------------------------
+
+    finalScore.textContent = score;
+
+    finalTotal.textContent = TOTAL_QUESTIONS;
+
+    const percentage = Math.round(
+
+        (score / TOTAL_QUESTIONS) * 100
+
+    );
+
+    finalPercentage.textContent =
+
+        percentage + "%";
+
+    //--------------------------------------------------
+    // FEEDBACK
+    //--------------------------------------------------
+
+    if(percentage>=90){
+
+        personalFeedback.textContent=
+
+        "Outstanding work! You have excellent mathematical skills.";
+
+    }
+
+    else if(percentage>=75){
+
+        personalFeedback.textContent=
+
+        "Great job! Keep practising to become even better.";
+
+    }
+
+    else if(percentage>=50){
+
+        personalFeedback.textContent=
+
+        "Good effort. A little more practice will improve your score.";
+
+    }
+
+    else{
+
+        personalFeedback.textContent=
+
+        "Don't worry! Every expert started as a beginner. Keep practising.";
+
+    }
+
+    //--------------------------------------------------
+    // STRENGTH
+    //--------------------------------------------------
+
+    if(bestStreak>=10){
+
+        strengthText.textContent=
+
+        "Excellent consistency. You maintained a long correct-answer streak.";
+
+    }
+
+    else if(score>=15){
+
+        strengthText.textContent=
+
+        "Strong understanding of this topic.";
+
+    }
+
+    else{
+
+        strengthText.textContent=
+
+        "You attempted every question. That's a great habit!";
+
+    }
+
+    //--------------------------------------------------
+    // PRACTICE
+    //--------------------------------------------------
+
+    if(percentage>=85){
+
+        practiceText.textContent=
+
+        "Try Challenge Mode next.";
+
+    }
+
+    else if(percentage>=60){
+
+        practiceText.textContent=
+
+        "Revise medium difficulty questions.";
+
+    }
+
+    else{
+
+        practiceText.textContent=
+
+        "Start with Easy mode and practise daily.";
+
+    }
+
+    //--------------------------------------------------
+    // BADGES
+    //--------------------------------------------------
+
+    badgeContainer.innerHTML="";
+
+    if(score===20){
+
+        addBadge("🏆","Perfect Score");
+
+    }
+
+    if(bestStreak>=5){
+
+        addBadge("🔥","Hot Streak");
+
+    }
+
+    if(percentage>=90){
+
+        addBadge("⭐","Math Genius");
+
+    }
+
+    if(timerEnabled){
+
+        addBadge("⏰","Beat The Clock");
+
+    }
+
+    if(challengeMode){
+
+        addBadge("🚀","Challenge Player");
+
+    }
+
+}
+
+///////////////////////////////////////////////////////
+// ADD BADGE
+///////////////////////////////////////////////////////
+
+function addBadge(icon,title){
+
+    const badge=document.createElement("div");
+
+    badge.className="badge";
+
+    badge.innerHTML=`
+
+        <div class="badge-icon">
+
+            ${icon}
+
+        </div>
+
+        <div class="badge-title">
+
+            ${title}
+
+        </div>
+
+    `;
+
+    badgeContainer.appendChild(badge);
+
+}
+//=====================================================
+// PART 5
+// XP • LEVELS • BADGES • STATISTICS
+//=====================================================
+
+//=====================================================
+// PLAYER STATS
+//=====================================================
+
+let totalCorrect = 0;
+let totalWrong = 0;
+let totalAnswered = 0;
+let combo = 0;
+let highestCombo = 0;
+
+//=====================================================
+// UPDATE PLAYER STATS
+//=====================================================
+
+function updatePlayerStats(correct){
+
+    totalAnswered++;
+
+    if(correct){
+
+        totalCorrect++;
+
+        combo++;
+
+        xp += XP_PER_CORRECT;
+
+        if(combo > highestCombo){
+
+            highestCombo = combo;
+
+        }
+
+    }
+
+    else{
+
+        totalWrong++;
+
+        combo = 0;
+
+    }
+
+    level = Math.floor(xp / 100) + 1;
+
+}
+
+//=====================================================
+// CALCULATE ACCURACY
+//=====================================================
+
+function getAccuracy(){
+
+    if(totalAnswered===0){
+
+        return 0;
+
+    }
+
+    return Math.round(
+
+        (totalCorrect / totalAnswered) * 100
+
+    );
+
+}
+
+//=====================================================
+// XP REQUIRED FOR NEXT LEVEL
+//=====================================================
+
+function xpForNextLevel(){
+
+    return level * 100;
+
+}
+
+//=====================================================
+// XP REMAINING
+//=====================================================
+
+function xpRemaining(){
+
+    return xpForNextLevel() - xp;
+
+}
+
+//=====================================================
+// SHOW LEVEL POPUP
+//=====================================================
+
+function showLevelUp(){
+
+    const popup=document.createElement("div");
+
+    popup.className="level-popup";
+
+    popup.innerHTML=`
+
+        <h2>🎉 Level Up!</h2>
+
+        <h3>Level ${level}</h3>
+
+    `;
+
+    document.body.appendChild(popup);
+
+    setTimeout(()=>{
+
+        popup.remove();
+
+    },2500);
+
+}
+
+//=====================================================
+// CHECK LEVEL UP
+//=====================================================
+
+let previousLevel = 1;
+
+function checkLevel(){
+
+    if(level > previousLevel){
+
+        previousLevel = level;
+
+        showLevelUp();
+
+    }
+
+}
+
+//=====================================================
+// BADGE SYSTEM
+//=====================================================
+
+function unlockBadges(){
+
+    if(score===5){
+
+        addBadge("🥉","5 Correct");
+
+    }
+
+    if(score===10){
+
+        addBadge("🥈","10 Correct");
+
+    }
+
+    if(score===15){
+
+        addBadge("🥇","15 Correct");
+
+    }
+
+    if(score===20){
+
+        addBadge("👑","Perfect Score");
+
+    }
+
+    if(highestCombo>=5){
+
+        addBadge("🔥","Combo Master");
+
+    }
+
+    if(getAccuracy()>=90){
+
+        addBadge("🎯","Accuracy Expert");
+
+    }
+
+    if(level>=5){
+
+        addBadge("⭐","Level 5");
+
+    }
+
+}
+
+//=====================================================
+// LIVE STATS
+//=====================================================
+
+function updateLiveStats(){
+
+    const accuracy=getAccuracy();
+
+    console.log(
+
+        "Accuracy:",accuracy+"%",
+
+        "| XP:",xp,
+
+        "| Level:",level,
+
+        "| Combo:",combo
+
+    );
+
+}
+
+//=====================================================
+// PLAYER SUMMARY
+//=====================================================
+
+function getPlayerSummary(){
+
+    return{
+
+        score:score,
+
+        level:level,
+
+        xp:xp,
+
+        accuracy:getAccuracy(),
+
+        combo:highestCombo,
+
+        badges:earnedBadges
+
+    };
+
+}
+
+//=====================================================
+// SAVE PROGRESS
+//=====================================================
+
+function saveProgress(){
+
+    const data={
+
+        xp,
+
+        level,
+
+        highestCombo,
+
+        totalCorrect,
+
+        totalWrong,
+
+        totalAnswered,
+
+        bestStreak
+
+    };
+
+    localStorage.setItem(
+
+        "mathmind-progress",
+
+        JSON.stringify(data)
+
+    );
+
+}
+
+//=====================================================
+// LOAD PROGRESS
+//=====================================================
+
+function loadProgress(){
+
+    const data=
+
+    JSON.parse(
+
+        localStorage.getItem(
+
+            "mathmind-progress"
+
+        )
+
+    );
+
+    if(!data){
+
+        return;
+
+    }
+
+    xp=data.xp || 0;
+
+    level=data.level || 1;
+
+    highestCombo=data.highestCombo || 0;
+
+    totalCorrect=data.totalCorrect || 0;
+
+    totalWrong=data.totalWrong || 0;
+
+    totalAnswered=data.totalAnswered || 0;
+
+    bestStreak=data.bestStreak || 0;
+
+}
+
+//=====================================================
+// RESET PLAYER STATS
+//=====================================================
+
+function resetPlayerStats(){
+
+    totalCorrect=0;
+
+    totalWrong=0;
+
+    totalAnswered=0;
+
+    combo=0;
+
+    highestCombo=0;
+
+}
+
+//=====================================================
+// END PART 5
+//=====================================================
+//=====================================================
+// PART 6
+// TIMER • PROGRESS • QUESTION FLOW
+//=====================================================
+
+//=====================================================
+// UPDATE PROGRESS BAR
+//=====================================================
+
+function updateProgressBar(){
+
+    const progress =
+        (currentQuestionNumber / TOTAL_QUESTIONS) * 100;
+
+    progressFill.style.width = progress + "%";
+
+}
+
+//=====================================================
+// UPDATE QUESTION COUNTER
+//=====================================================
+
+function updateQuestionCounter(){
+
+    questionNumberElement.textContent =
+    Math.min(currentQuestionNumber + 1, TOTAL_QUESTIONS);
+
+}
+
+//=====================================================
+// UPDATE ALL UI
+//=====================================================
+
+function refreshUI(){
+
+    updateDashboard();
+
+    updateProgressBar();
+
+    updateQuestionCounter();
+
+}
+
+//=====================================================
+// RESET QUESTION SCREEN
+//=====================================================
+
+function resetQuestionUI(){
+
+    answered = false;
+
+    answerInput.value = "";
+
+    feedbackElement.innerHTML = "";
+
+    explanationElement.innerHTML = "";
+
+    explanationElement.classList.add("hidden");
+
+    hintBox.innerHTML = "";
+
+    hintBox.classList.add("hidden");
+
+    mcqOptions.innerHTML = "";
+
+}
+
+//=====================================================
+// START QUESTION
+//=====================================================
+
+function startQuestion(){
+
+    resetQuestionUI();
+
+    refreshUI();
+
+    if(timerEnabled){
+
+        startTimer();
+
+    }
+
+}
+
+//=====================================================
+// GO TO NEXT QUESTION
+//=====================================================
+
+function nextQuestion(){
+
+    stopTimer();
+
+    currentQuestionNumber++;
+
+    if(currentQuestionNumber >= TOTAL_QUESTIONS){
+
+        showResults();
+
+        return;
+
+    }
+
+    loadQuestion();
+
+}
+
+//=====================================================
+// SKIP QUESTION
+//=====================================================
+
+function skipQuestion(){
+
+    streak = 0;
+
+    totalWrong++;
+
+    totalAnswered++;
+
+    nextQuestion();
+
+}
+
+//=====================================================
+// TIMER WARNING
+//=====================================================
+
+function timerWarning(){
+
+    if(timer <= 5){
+
+        timerText.style.color = "red";
+
+    }
+
+    else{
+
+        timerText.style.color = "";
+
+    }
+
+}
+
+//=====================================================
+// OVERRIDE START TIMER
+//=====================================================
+
+function startTimer(){
+
+    if(!timerEnabled){
+
+        return;
+
+    }
+
+    stopTimer();
+
+    timer = QUESTION_TIME;
+
+    timerText.textContent = timer;
+
+    timerWarning();
+
+    timerInterval = setInterval(()=>{
+
+        timer--;
+
+        timerText.textContent = timer;
+
+        timerWarning();
+
+        if(timer <= 0){
+
+            stopTimer();
+
+            checkAnswer(true);
+
+        }
+
+    },1000);
+
+}
+
+//=====================================================
+// ENABLE ENTER KEY
+//=====================================================
+
+document.addEventListener("keydown",function(e){
+
+    if(
+
+        quizScreen.classList.contains("hidden")
+
+    ){
+
+        return;
+
+    }
+
+    if(questionFormat==="descriptive"){
+
+        if(e.key==="Enter"){
+
+            if(!answered){
+
+                checkAnswer();
+
+            }
+
+        }
+
+    }
+
+});
+
+//=====================================================
+// AUTO FOCUS
+//=====================================================
+
+function focusInput(){
+
+    if(questionFormat==="descriptive"){
+
+        answerInput.focus();
+
+    }
+
+}
+
+//=====================================================
+// LOADING ANIMATION
+//=====================================================
+
+function animateQuestion(){
+
+    questionElement.classList.remove("fade-in");
+
+    void questionElement.offsetWidth;
+
+    questionElement.classList.add("fade-in");
+
+}
+
+//=====================================================
+// OVERRIDE DISPLAY QUESTION
+//=====================================================
+
+const originalDisplayQuestion = displayQuestion;
+
+displayQuestion = function(){
+
+    originalDisplayQuestion();
+
+    animateQuestion();
+
+    focusInput();
+
+};
+
+//=====================================================
+// SHOW SCORE DURING QUIZ
+//=====================================================
+
+function updateLiveHeader(){
+
+    scoreElement.textContent = score;
+
+    streakElement.textContent = streak;
+
+    bestStreakElement.textContent = bestStreak;
+
+}
+
+//=====================================================
+// END PART 6
+//=====================================================
+//=====================================================
+// PART 7
+// ADVANCED RESULT ANALYSIS
+//=====================================================
+
+//===============================================
+// TOPIC PERFORMANCE
+//===============================================
+
+let topicStats = {};
+
+function initializeTopic(topic){
+
+    if(!topicStats[topic]){
+
+        topicStats[topic]={
+
+            correct:0,
+            wrong:0
+
+        };
+
+    }
+
+}
+
+function recordTopicResult(topic,isCorrect){
+
+    initializeTopic(topic);
+
+    if(isCorrect){
+
+        topicStats[topic].correct++;
+
+    }
+
+    else{
+
+        topicStats[topic].wrong++;
+
+    }
+
+}
+
+//===============================================
+// ACCURACY
+//===============================================
+
+function calculateAccuracy(){
+
+    if(totalAnswered===0){
+
+        return 0;
+
+    }
+
+    return Math.round(
+
+        totalCorrect*100/totalAnswered
+
+    );
+
+}
+
+//===============================================
+// STRONGEST TOPIC
+//===============================================
+
+function getStrongestTopic(){
+
+    let best="None";
+
+    let highest=-1;
+
+    for(const topic in topicStats){
+
+        const score=topicStats[topic].correct;
+
+        if(score>highest){
+
+            highest=score;
+
+            best=topic;
+
+        }
+
+    }
+
+    return best;
+
+}
+
+//===============================================
+// WEAKEST TOPIC
+//===============================================
+
+function getWeakestTopic(){
+
+    let weak="None";
+
+    let highestWrong=-1;
+
+    for(const topic in topicStats){
+
+        const score=topicStats[topic].wrong;
+
+        if(score>highestWrong){
+
+            highestWrong=score;
+
+            weak=topic;
+
+        }
+
+    }
+
+    return weak;
+
+}
+
+//===============================================
+// PERFORMANCE MESSAGE
+//===============================================
+
+function generatePerformanceMessage(){
+
+    const accuracy=calculateAccuracy();
+
+    if(accuracy>=95){
+
+        return "Outstanding! You have mastered this quiz.";
+
+    }
+
+    if(accuracy>=85){
+
+        return "Excellent work! Keep challenging yourself.";
+
+    }
+
+    if(accuracy>=70){
+
+        return "Great effort. A little more practice will make you even stronger.";
+
+    }
+
+    if(accuracy>=50){
+
+        return "Good attempt. Revise the weak areas and try again.";
+
+    }
+
+    return "Keep practising. Every attempt makes you better.";
+
+}
+
+//===============================================
+// UPDATE RESULT DETAILS
+//===============================================
+
+function updateResultDetails(){
+
+    if(document.getElementById("strength-text")){
+
+        strengthText.textContent=
+
+        "Strongest Topic: "+getStrongestTopic();
+
+    }
+
+    if(document.getElementById("practice-text")){
+
+        practiceText.textContent=
+
+        "Needs Practice: "+getWeakestTopic();
+
+    }
+
+    if(document.getElementById("personal-feedback-text")){
+
+        personalFeedback.textContent=
+
+        generatePerformanceMessage();
+
+    }
+
+}
+
+//===============================================
+// QUIZ SUMMARY
+//===============================================
+
+function getQuizSummary(){
+
+    return{
+
+        student:studentName,
+
+        score:score,
+
+        total:TOTAL_QUESTIONS,
+
+        accuracy:calculateAccuracy(),
+
+        level:level,
+
+        xp:xp,
+
+        bestStreak:bestStreak,
+
+        strongest:getStrongestTopic(),
+
+        weakest:getWeakestTopic()
+
+    };
+
+}
+
+//===============================================
+// PRINT SUMMARY
+//===============================================
+
+function printSummary(){
+
+    console.table(
+
+        getQuizSummary()
+
+    );
+
+}
+
+//===============================================
+// SHARE MESSAGE
+//===============================================
+
+function getShareMessage(){
+
+    const s=getQuizSummary();
+
+    return `${s.student} scored ${s.score}/${s.total} (${s.accuracy}%) on MathMind AI!`;
+
+}
+
+//===============================================
+// COPY RESULT
+//===============================================
+
+function copyResult(){
+
+    navigator.clipboard.writeText(
+
+        getShareMessage()
+
+    );
+
+}
+
+//===============================================
+// CALL THIS INSIDE showResults()
+//===============================================
+
+// updateResultDetails();
+// printSummary();
+
+
+//=====================================================
+// END PART 7
+//=====================================================
+//=====================================================
+// PART 8
+// LOCAL STORAGE • LIFETIME STATS • SETTINGS
+//=====================================================
+
+//=====================================================
+// LIFETIME STATISTICS
+//=====================================================
+
+let lifetimeStats={
+
+    quizzesPlayed:0,
+
+    totalQuestions:0,
+
+    totalCorrect:0,
+
+    totalXP:0,
+
+    highestLevel:1
+
+};
+
+//=====================================================
+// LOAD LIFETIME STATS
+//=====================================================
+
+function loadLifetimeStats(){
+
+    const saved=
+
+    localStorage.getItem("mathmind-lifetime");
+
+    if(saved){
+
+        lifetimeStats=JSON.parse(saved);
+
+    }
+
+}
+
+//=====================================================
+// SAVE LIFETIME STATS
+//=====================================================
+
+function saveLifetimeStats(){
+
+    localStorage.setItem(
+
+        "mathmind-lifetime",
+
+        JSON.stringify(lifetimeStats)
+
+    );
+
+}
+
+//=====================================================
+// UPDATE LIFETIME STATS
+//=====================================================
+
+function updateLifetimeStats(){
+
+    lifetimeStats.quizzesPlayed++;
+
+    lifetimeStats.totalQuestions+=TOTAL_QUESTIONS;
+
+    lifetimeStats.totalCorrect+=score;
+
+    lifetimeStats.totalXP+=xp;
+
+    if(level>lifetimeStats.highestLevel){
+
+        lifetimeStats.highestLevel=level;
+
+    }
+
+    saveLifetimeStats();
+
+}
+
+//=====================================================
+// GET LIFETIME ACCURACY
+//=====================================================
+
+function getLifetimeAccuracy(){
+
+    if(lifetimeStats.totalQuestions===0){
+
+        return 0;
+
+    }
+
+    return Math.round(
+
+        lifetimeStats.totalCorrect*100/
+
+        lifetimeStats.totalQuestions
+
+    );
+
+}
+
+//=====================================================
+// DAILY STREAK
+//=====================================================
+
+function updateDailyStreak(){
+
+    const today=
+
+    new Date().toDateString();
+
+    const last=
+
+    localStorage.getItem("mathmind-last-day");
+
+    let streak=
+
+    Number(localStorage.getItem("mathmind-daily"))||0;
+
+    if(last!==today){
+
+        streak++;
+
+        localStorage.setItem(
+
+            "mathmind-last-day",
+
+            today
+
+        );
+
+        localStorage.setItem(
+
+            "mathmind-daily",
+
+            streak
+
+        );
+
+    }
+
+}
+
+//=====================================================
+// GET DAILY STREAK
+//=====================================================
+
+function getDailyStreak(){
+
+    return Number(
+
+        localStorage.getItem("mathmind-daily")
+
+    )||1;
+
+}
+
+//=====================================================
+// RESET ALL SAVED DATA
+//=====================================================
+
+function resetAllProgress(){
+
+    if(confirm("Reset all saved progress?")){
+
+        localStorage.removeItem(
+
+            "mathmind-progress"
+
+        );
+
+        localStorage.removeItem(
+
+            "mathmind-lifetime"
+
+        );
+
+        localStorage.removeItem(
+
+            "mathmind-last-day"
+
+        );
+
+        localStorage.removeItem(
+
+            "mathmind-daily"
+
+        );
+
+        alert("Progress Cleared!");
+
+    }
+
+}
+
+//=====================================================
+// EXPORT RESULT
+//=====================================================
+
+function exportResult(){
+
+    const summary=getQuizSummary();
+
+    const text=`
+
+Student : ${summary.student}
+
+Score : ${summary.score}/${summary.total}
+
+Accuracy : ${summary.accuracy}%
+
+Level : ${summary.level}
+
+XP : ${summary.xp}
+
+Strongest Topic : ${summary.strongest}
+
+Needs Practice : ${summary.weakest}
+
+Generated by MathMind AI
+
+`;
+
+    const blob=
+
+    new Blob(
+
+        [text],
+
+        {type:"text/plain"}
+
+    );
+
+    const url=
+
+    URL.createObjectURL(blob);
+
+    const a=
+
+    document.createElement("a");
+
+    a.href=url;
+
+    a.download="MathMind_Result.txt";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+//=====================================================
+// SETTINGS
+//=====================================================
+
+const settings={
+
+    sound:true,
+
+    animation:true,
+
+    autoNext:true
+
+};
+
+function saveSettings(){
+
+    localStorage.setItem(
+
+        "mathmind-settings",
+
+        JSON.stringify(settings)
+
+    );
+
+}
+
+function loadSettings(){
+
+    const s=
+
+    localStorage.getItem(
+
+        "mathmind-settings"
+
+    );
+
+    if(s){
+
+        Object.assign(
+
+            settings,
+
+            JSON.parse(s)
+
+        );
+
+    }
+
+}
+
+//=====================================================
+// SHOW LIFETIME STATS
+//=====================================================
+
+function showLifetimeStats(){
+
+    console.table({
+
+        Quizzes:lifetimeStats.quizzesPlayed,
+
+        Questions:lifetimeStats.totalQuestions,
+
+        Correct:lifetimeStats.totalCorrect,
+
+        Accuracy:getLifetimeAccuracy()+"%",
+
+        XP:lifetimeStats.totalXP,
+
+        HighestLevel:lifetimeStats.highestLevel,
+
+        DailyStreak:getDailyStreak()
+
+    });
+
+}
+
+//=====================================================
+// END PART 8
+//=====================================================
+//=====================================================
+// PART 9
+// ANIMATIONS • SOUND • UTILITIES
+//=====================================================
+
+//=====================================================
+// SOUND EFFECTS
+//=====================================================
+
+const sounds={
+
+    correct:new Audio("sounds/correct.mp3"),
+
+    wrong:new Audio("sounds/wrong.mp3"),
+
+    finish:new Audio("sounds/finish.mp3")
+
+};
+
+function playSound(type){
+
+    if(!settings.sound) return;
+
+    if(sounds[type]){
+
+        sounds[type].currentTime=0;
+
+        sounds[type].play().catch(()=>{});
+
+    }
+
+}
+
+//=====================================================
+// CONFETTI
+//=====================================================
+
+function launchConfetti(){
+
+    if(!settings.animation) return;
+
+    for(let i=0;i<120;i++){
+
+        const piece=document.createElement("div");
+
+        piece.className="confetti";
+
+        piece.style.left=Math.random()*100+"vw";
+
+        piece.style.animationDelay=Math.random()*2+"s";
+
+        piece.style.backgroundColor=
+
+        `hsl(${Math.random()*360},80%,60%)`;
+
+        document.body.appendChild(piece);
+
+        setTimeout(()=>{
+
+            piece.remove();
+
+        },4000);
+
+    }
+
+}
+
+//=====================================================
+// SHAKE EFFECT
+//=====================================================
+
+function shakeElement(element){
+
+    element.classList.add("shake");
+
+    setTimeout(()=>{
+
+        element.classList.remove("shake");
+
+    },500);
+
+}
+
+//=====================================================
+// PULSE EFFECT
+//=====================================================
+
+function pulseElement(element){
+
+    element.classList.add("pulse");
+
+    setTimeout(()=>{
+
+        element.classList.remove("pulse");
+
+    },500);
+
+}
+
+//=====================================================
+// RANDOM MOTIVATION
+//=====================================================
+
+const motivationalQuotes=[
+
+"Every expert was once a beginner.",
+
+"Practice makes progress.",
+
+"Mistakes help you learn.",
+
+"You are smarter than you think.",
+
+"One question at a time.",
+
+"Keep solving. Keep growing.",
+
+"Mathematics is the language of logic.",
+
+"Great job! Never stop learning."
+
+];
+
+function randomMotivation(){
+
+    return motivationalQuotes[
+
+        rand(0,motivationalQuotes.length-1)
+
+    ];
+
+}
+
+//=====================================================
+// SHOW TOAST
+//=====================================================
+
+function showToast(message){
+
+    const toast=document.createElement("div");
+
+    toast.className="toast";
+
+    toast.innerHTML=message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(()=>{
+
+        toast.classList.add("show");
+
+    },50);
+
+    setTimeout(()=>{
+
+        toast.remove();
+
+    },3000);
+
+}
+
+//=====================================================
+// CELEBRATE
+//=====================================================
+
+function celebrate(){
+
+    playSound("finish");
+
+    launchConfetti();
+
+    showToast("🎉 Fantastic Work!");
+
+}
+
+//=====================================================
+// SCORE GRADE
+//=====================================================
+
+function getGrade(){
+
+    const accuracy=calculateAccuracy();
+
+    if(accuracy>=95) return "A+";
+
+    if(accuracy>=90) return "A";
+
+    if(accuracy>=80) return "B";
+
+    if(accuracy>=70) return "C";
+
+    if(accuracy>=60) return "D";
+
+    return "E";
+
+}
+
+//=====================================================
+// ESTIMATED SKILL
+//=====================================================
+
+function getSkillLevel(){
+
+    const accuracy=calculateAccuracy();
+
+    if(accuracy>=90) return "Expert";
+
+    if(accuracy>=75) return "Advanced";
+
+    if(accuracy>=60) return "Intermediate";
+
+    if(accuracy>=40) return "Beginner";
+
+    return "Starter";
+
+}
+
+//=====================================================
+// RESULT CARD
+//=====================================================
+
+function createResultCard(){
+
+    return{
+
+        student:studentName,
+
+        grade:getGrade(),
+
+        skill:getSkillLevel(),
+
+        score:score,
+
+        total:TOTAL_QUESTIONS,
+
+        accuracy:calculateAccuracy(),
+
+        xp:xp,
+
+        level:level
+
+    };
+
+}
+
+//=====================================================
+// SHOW RESULT IN CONSOLE
+//=====================================================
+
+function printResultCard(){
+
+    console.table(
+
+        createResultCard()
+
+    );
+
+}
+
+//=====================================================
+// CALL AFTER QUIZ FINISH
+//=====================================================
+
+// celebrate();
+//
+// printResultCard();
+
+
+//=====================================================
+// END PART 9
+//=====================================================
+//=====================================================
+// PART 10
+// FINAL INITIALIZATION
+//=====================================================
+
+//=====================================================
+// STARTUP CHECKS
+//=====================================================
+
+function startupChecks(){
+
+    console.log("===================================");
+
+    console.log("MathMind AI Initializing...");
+
+    console.log("Questions Loaded:", typeof window.generateQuestion==="function");
+
+    console.log("Addition:", typeof window.generateAdditionQuestion==="function");
+
+    console.log("Subtraction:", typeof window.generateSubtractionQuestion==="function");
+
+    console.log("Multiplication:", typeof window.generateMultiplicationQuestion==="function");
+
+    console.log("Division:", typeof window.generateDivisionQuestion==="function");
+
+    console.log("Fractions:", typeof window.generateFractionsQuestion==="function");
+
+    console.log("Decimals:", typeof window.generateDecimalsQuestion==="function");
+
+    console.log("Percentages:", typeof window.generatePercentagesQuestion==="function");
+
+    console.log("Ratio:", typeof window.generateRatioQuestion==="function");
+
+    console.log("Factors:", typeof window.generateFactorsQuestion==="function");
+
+    console.log("Algebra:", typeof window.generateAlgebraQuestion==="function");
+
+    console.log("===================================");
+
+}
+
+//=====================================================
+// RESET UI
+//=====================================================
+
+function initializeUI(){
+
+    quizScreen.classList.add("hidden");
+
+    resultScreen.classList.add("hidden");
+
+    welcomeScreen.classList.remove("hidden");
+
+    feedbackElement.innerHTML="";
+
+    explanationElement.innerHTML="";
+
+    hintBox.innerHTML="";
+
+    progressFill.style.width="0%";
+
+    scoreElement.textContent="0";
+
+    streakElement.textContent="0";
+
+    bestStreakElement.textContent="0";
+
+}
+
+//=====================================================
+// LOAD USER DATA
+//=====================================================
+
+function initializeStorage(){
+
+    loadProgress();
+
+    loadLifetimeStats();
+
+    loadSettings();
+
+}
+
+//=====================================================
+// REGISTER EVENTS
+//=====================================================
+
+function registerEvents(){
+
+    answerInput.addEventListener("keypress",function(e){
+
+        if(e.key==="Enter"){
+
+            if(!answered){
+
+                checkAnswer();
+
+            }
+
+        }
+
+    });
+
+}
+
+//=====================================================
+// RESET QUIZ
+//=====================================================
+
+function resetQuizData(){
+
+    currentQuestionNumber=0;
+
+    score=0;
+
+    streak=0;
+
+    answered=false;
+
+    quizFinished=false;
+
+    resetPlayerStats();
+
+}
+
+//=====================================================
+// RESTART
+//=====================================================
+
+function restartQuiz(){
+
+    stopTimer();
+
+    resetQuizData();
+
+    initializeUI();
+
+}
+
+//=====================================================
+// BACK HOME
+//=====================================================
+
+function goBackHome(){
+
+    stopTimer();
+
+    welcomeScreen.classList.remove("hidden");
+
+    quizScreen.classList.add("hidden");
+
+    resultScreen.classList.add("hidden");
+
+}
+
+//=====================================================
+// VERSION
+//=====================================================
+
+const APP_VERSION="MathMind AI v1.0";
+
+//=====================================================
+// READY
+//=====================================================
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    startupChecks();
+
+    initializeStorage();
+
+    initializeUI();
+
+    registerEvents();
+
+    console.log(APP_VERSION);
+
+    console.log("MathMind AI Ready!");
+
+});
+
+//=====================================================
+// EXPORTS
+//=====================================================
+
+window.startQuiz=startQuiz;
+
+window.checkAnswer=checkAnswer;
+
+window.restartQuiz=restartQuiz;
+
+window.goBackHome=goBackHome;
+
+window.showHint=showHint;
+
+//=====================================================
+// END OF FILE
+//=====================================================
+
+console.log("===================================");
+
+console.log("MathMind AI Successfully Loaded");
+
+console.log("Developed by Shouryarghya Patra");
+
+console.log("===================================");
